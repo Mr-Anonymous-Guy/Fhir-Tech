@@ -1,14 +1,12 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { ABHAUser } from '@/types/fhir';
-import { fhirService } from '@/services/fhirService';
+import { User, Session } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AuthContextType {
-  user: ABHAUser | null;
+  user: User | null;
+  session: Session | null;
   isAuthenticated: boolean;
-  isDemoMode: boolean;
-  login: (abhaId: string, phoneNumber: string, otp: string) => Promise<void>;
-  loginDemo: () => void;
-  logout: () => void;
+  logout: () => Promise<void>;
   loading: boolean;
 }
 
@@ -27,58 +25,33 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-  const [user, setUser] = useState<ABHAUser | null>(null);
-  const [isDemoMode, setIsDemoMode] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+      }
+    );
+
     // Check for existing session
-    const savedUser = localStorage.getItem('fhir-user');
-    const savedDemoMode = localStorage.getItem('fhir-demo-mode');
-    
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-      setIsDemoMode(savedDemoMode === 'true');
-    }
-    
-    setLoading(false);
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const login = async (abhaId: string, phoneNumber: string, otp: string) => {
-    setLoading(true);
-    try {
-      const authenticatedUser = await fhirService.authenticateABHA(abhaId, phoneNumber, otp);
-      setUser(authenticatedUser);
-      setIsDemoMode(false);
-      localStorage.setItem('fhir-user', JSON.stringify(authenticatedUser));
-      localStorage.setItem('fhir-demo-mode', 'false');
-    } catch (error) {
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loginDemo = async () => {
-    setLoading(true);
-    try {
-      const demoUser = await fhirService.authenticateABHA('demo', '', '123456');
-      setUser(demoUser);
-      setIsDemoMode(true);
-      localStorage.setItem('fhir-user', JSON.stringify(demoUser));
-      localStorage.setItem('fhir-demo-mode', 'true');
-    } catch (error) {
-      console.error('Demo login error:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const logout = () => {
+  const logout = async () => {
+    await supabase.auth.signOut();
     setUser(null);
-    setIsDemoMode(false);
-    localStorage.removeItem('fhir-user');
-    localStorage.removeItem('fhir-demo-mode');
+    setSession(null);
   };
 
   const isAuthenticated = !!user;
@@ -87,10 +60,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     <AuthContext.Provider
       value={{
         user,
+        session,
         isAuthenticated,
-        isDemoMode,
-        login,
-        loginDemo,
         logout,
         loading
       }}

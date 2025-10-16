@@ -13,7 +13,6 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 
 const Search = () => {
-  const { isDemoMode } = useAuth();
   const { toast } = useToast();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -203,7 +202,7 @@ const Search = () => {
   const sendToEMR = (mapping: NAMASTEMapping) => {
     // Mock EMR integration
     toast({
-      title: isDemoMode ? 'Demo: EMR Integration' : 'Sent to EMR',
+      title: 'Sent to EMR',
       description: `${mapping.namaste_term} mapping sent to Electronic Medical Record system.`,
       variant: 'default'
     });

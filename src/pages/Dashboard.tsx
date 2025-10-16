@@ -28,7 +28,7 @@ interface DashboardStats {
 }
 
 const Dashboard = () => {
-  const { user, isDemoMode } = useAuth();
+  const { user } = useAuth();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -127,18 +127,12 @@ const Dashboard = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground">
-            Welcome, {user?.name}
+            Welcome, {user?.user_metadata?.full_name || user?.email}
           </h1>
           <p className="text-muted-foreground mt-2">
             FHIR R4-compliant terminology service for traditional Indian medicine
           </p>
         </div>
-        {isDemoMode && (
-          <Badge variant="outline" className="bg-warning/10 text-warning border-warning/30">
-            <Shield className="w-4 h-4 mr-2" />
-            Demo Mode Active
-          </Badge>
-        )}
       </div>
 
       {/* Statistics Cards */}
@@ -189,10 +183,10 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-info">
-              {isDemoMode ? 'Demo' : 'Live'}
+              Live
             </div>
             <p className="text-xs text-muted-foreground">
-              ABHA: {user?.abhaId}
+              {user?.email}
             </p>
           </CardContent>
         </Card>

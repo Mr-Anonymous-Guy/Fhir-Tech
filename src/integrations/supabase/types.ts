@@ -14,7 +14,168 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      audit_logs: {
+        Row: {
+          action: string
+          id: string
+          new_values: Json | null
+          old_values: Json | null
+          record_id: string
+          table_name: string
+          timestamp: string | null
+          user_email: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          id?: string
+          new_values?: Json | null
+          old_values?: Json | null
+          record_id: string
+          table_name: string
+          timestamp?: string | null
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          id?: string
+          new_values?: Json | null
+          old_values?: Json | null
+          record_id?: string
+          table_name?: string
+          timestamp?: string | null
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      ayush_mappings: {
+        Row: {
+          ayush_code: string
+          ayush_term: string
+          confidence_level: string | null
+          created_at: string | null
+          created_by: string | null
+          icd11_code: string
+          icd11_foundation_uri: string | null
+          icd11_title: string
+          id: string
+          mapping_status: string | null
+          notes: string | null
+          reviewed_by: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          ayush_code: string
+          ayush_term: string
+          confidence_level?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          icd11_code: string
+          icd11_foundation_uri?: string | null
+          icd11_title: string
+          id?: string
+          mapping_status?: string | null
+          notes?: string | null
+          reviewed_by?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          ayush_code?: string
+          ayush_term?: string
+          confidence_level?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          icd11_code?: string
+          icd11_foundation_uri?: string | null
+          icd11_title?: string
+          id?: string
+          mapping_status?: string | null
+          notes?: string | null
+          reviewed_by?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      namaste_mappings: {
+        Row: {
+          confidence_level: string | null
+          created_at: string | null
+          created_by: string | null
+          icd11_code: string
+          icd11_foundation_uri: string | null
+          icd11_title: string
+          id: string
+          mapping_status: string | null
+          namaste_code: string
+          namaste_term: string
+          notes: string | null
+          reviewed_by: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          confidence_level?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          icd11_code: string
+          icd11_foundation_uri?: string | null
+          icd11_title: string
+          id?: string
+          mapping_status?: string | null
+          namaste_code: string
+          namaste_term: string
+          notes?: string | null
+          reviewed_by?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          confidence_level?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          icd11_code?: string
+          icd11_foundation_uri?: string | null
+          icd11_title?: string
+          id?: string
+          mapping_status?: string | null
+          namaste_code?: string
+          namaste_term?: string
+          notes?: string | null
+          reviewed_by?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          full_name: string | null
+          id: string
+          organization: string | null
+          role: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id: string
+          organization?: string | null
+          role?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          organization?: string | null
+          role?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

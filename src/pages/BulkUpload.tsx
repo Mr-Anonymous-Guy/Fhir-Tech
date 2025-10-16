@@ -12,7 +12,6 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 
 const BulkUpload = () => {
-  const { isDemoMode } = useAuth();
   const { toast } = useToast();
   const [dragActive, setDragActive] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
@@ -396,16 +395,6 @@ const BulkUpload = () => {
                 Process Another File
               </Button>
             </div>
-            
-            {isDemoMode && (
-              <Alert>
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription className="text-sm">
-                  <strong>Demo Mode:</strong> In production, this would create a ZIP file with individual 
-                  FHIR resources and push to configured EMR systems via HL7 FHIR APIs.
-                </AlertDescription>
-              </Alert>
-            )}
           </CardContent>
         </Card>
       )}

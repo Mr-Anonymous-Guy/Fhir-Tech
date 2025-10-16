@@ -1,0 +1,216 @@
+namaste_code,namaste_term,category,chapter_name,icd11_tm2_code,icd11_tm2_description,icd11_biomedicine_code,confidence_score
+NAM001,Traditional Term 1,Siddha,Respiratory System Disorders,XF78172,ICD-11 TM2 description for term 1,BB498,0.9
+NAM002,Traditional Term 2,Siddha,Digestive System Disorders,XB20847,ICD-11 TM2 description for term 2,BB769,0.97
+NAM003,Traditional Term 3,Unani,Respiratory System Disorders,XM16899,ICD-11 TM2 description for term 3,BD723,0.85
+NAM004,Traditional Term 4,Ayurveda,Digestive System Disorders,XF85067,ICD-11 TM2 description for term 4,BC129,0.91
+NAM005,Traditional Term 5,Ayurveda,Skin Conditions,XB47130,ICD-11 TM2 description for term 5,BC109,0.91
+NAM006,Traditional Term 6,Siddha,Digestive System Disorders,XB50112,ICD-11 TM2 description for term 6,BB397,0.93
+NAM007,Traditional Term 7,Unani,Skin Conditions,XA48228,ICD-11 TM2 description for term 7,BB579,0.97
+NAM008,Traditional Term 8,Ayurveda,Skin Conditions,XB56636,ICD-11 TM2 description for term 8,BC318,0.89
+NAM009,Traditional Term 9,Siddha,Skin Conditions,XM44119,ICD-11 TM2 description for term 9,BD535,0.97
+NAM010,Traditional Term 10,Ayurveda,Digestive System Disorders,XM76439,ICD-11 TM2 description for term 10,BA385,0.85
+NAM011,Traditional Term 11,Siddha,Digestive System Disorders,XF28662,ICD-11 TM2 description for term 11,BA535,0.91
+NAM012,Traditional Term 12,Unani,Metabolic Disorders,XA37725,ICD-11 TM2 description for term 12,BB207,0.9
+NAM013,Traditional Term 13,Unani,Respiratory System Disorders,XF92091,ICD-11 TM2 description for term 13,BC491,0.96
+NAM014,Traditional Term 14,Ayurveda,Digestive System Disorders,XF34939,ICD-11 TM2 description for term 14,BD196,0.89
+NAM015,Traditional Term 15,Unani,Respiratory System Disorders,XB41828,ICD-11 TM2 description for term 15,BB637,0.89
+NAM016,Traditional Term 16,Ayurveda,Musculoskeletal Disorders,XA56359,ICD-11 TM2 description for term 16,BA877,0.87
+NAM017,Traditional Term 17,Siddha,Skin Conditions,XF56771,ICD-11 TM2 description for term 17,BD788,0.89
+NAM018,Traditional Term 18,Siddha,Musculoskeletal Disorders,XA14052,ICD-11 TM2 description for term 18,BC745,0.93
+NAM019,Traditional Term 19,Ayurveda,Musculoskeletal Disorders,XB21104,ICD-11 TM2 description for term 19,BB528,1.0
+NAM020,Traditional Term 20,Ayurveda,Digestive System Disorders,XA82606,ICD-11 TM2 description for term 20,BC137,0.91
+NAM021,Traditional Term 21,Siddha,Musculoskeletal Disorders,XA87721,ICD-11 TM2 description for term 21,BD149,0.99
+NAM022,Traditional Term 22,Siddha,Digestive System Disorders,XG72757,ICD-11 TM2 description for term 22,BD716,0.91
+NAM023,Traditional Term 23,Ayurveda,Digestive System Disorders,XF71934,ICD-11 TM2 description for term 23,BB584,0.87
+NAM024,Traditional Term 24,Ayurveda,Digestive System Disorders,XF97606,ICD-11 TM2 description for term 24,BD835,0.89
+NAM025,Traditional Term 25,Unani,Musculoskeletal Disorders,XM51114,ICD-11 TM2 description for term 25,BA308,0.95
+NAM026,Traditional Term 26,Ayurveda,Metabolic Disorders,XA19477,ICD-11 TM2 description for term 26,BD245,0.86
+NAM027,Traditional Term 27,Siddha,Respiratory System Disorders,XA94452,ICD-11 TM2 description for term 27,BA837,0.95
+NAM028,Traditional Term 28,Unani,Respiratory System Disorders,XF77682,ICD-11 TM2 description for term 28,BA909,0.88
+NAM029,Traditional Term 29,Siddha,Respiratory System Disorders,XB79344,ICD-11 TM2 description for term 29,BA245,0.96
+NAM030,Traditional Term 30,Unani,Respiratory System Disorders,XB21745,ICD-11 TM2 description for term 30,BC643,0.89
+NAM031,Traditional Term 31,Siddha,Respiratory System Disorders,XA55404,ICD-11 TM2 description for term 31,BD806,0.96
+NAM032,Traditional Term 32,Siddha,Skin Conditions,XF87898,ICD-11 TM2 description for term 32,BC114,0.91
+NAM033,Traditional Term 33,Unani,Respiratory System Disorders,XB89484,ICD-11 TM2 description for term 33,BA782,0.88
+NAM034,Traditional Term 34,Ayurveda,Digestive System Disorders,XB55447,ICD-11 TM2 description for term 34,BA708,0.9
+NAM035,Traditional Term 35,Unani,Respiratory System Disorders,XG20396,ICD-11 TM2 description for term 35,BD289,0.97
+NAM036,Traditional Term 36,Siddha,Musculoskeletal Disorders,XA69437,ICD-11 TM2 description for term 36,BA368,0.99
+NAM037,Traditional Term 37,Siddha,Metabolic Disorders,XG85942,ICD-11 TM2 description for term 37,BB440,0.87
+NAM038,Traditional Term 38,Unani,Respiratory System Disorders,XM10772,ICD-11 TM2 description for term 38,BC954,0.92
+NAM039,Traditional Term 39,Unani,Musculoskeletal Disorders,XM96266,ICD-11 TM2 description for term 39,BA818,0.87
+NAM040,Traditional Term 40,Unani,Metabolic Disorders,XF62161,ICD-11 TM2 description for term 40,BB552,0.95
+NAM041,Traditional Term 41,Unani,Musculoskeletal Disorders,XB42830,ICD-11 TM2 description for term 41,BA703,0.86
+NAM042,Traditional Term 42,Ayurveda,Respiratory System Disorders,XM41708,ICD-11 TM2 description for term 42,BA213,1.0
+NAM043,Traditional Term 43,Siddha,Metabolic Disorders,XM31450,ICD-11 TM2 description for term 43,BD744,0.98
+NAM044,Traditional Term 44,Unani,Skin Conditions,XF52949,ICD-11 TM2 description for term 44,BA785,0.96
+NAM045,Traditional Term 45,Siddha,Respiratory System Disorders,XM56284,ICD-11 TM2 description for term 45,BD216,0.98
+NAM046,Traditional Term 46,Siddha,Musculoskeletal Disorders,XF12575,ICD-11 TM2 description for term 46,BD385,0.96
+NAM047,Traditional Term 47,Ayurveda,Respiratory System Disorders,XG74600,ICD-11 TM2 description for term 47,BD489,0.95
+NAM048,Traditional Term 48,Unani,Skin Conditions,XG20285,ICD-11 TM2 description for term 48,BA463,0.88
+NAM049,Traditional Term 49,Siddha,Metabolic Disorders,XB84435,ICD-11 TM2 description for term 49,BC276,0.95
+NAM050,Traditional Term 50,Siddha,Digestive System Disorders,XB50597,ICD-11 TM2 description for term 50,BB740,0.96
+NAM051,Traditional Term 51,Unani,Digestive System Disorders,XG36804,ICD-11 TM2 description for term 51,BA980,0.94
+NAM052,Traditional Term 52,Unani,Metabolic Disorders,XM29330,ICD-11 TM2 description for term 52,BB427,0.86
+NAM053,Traditional Term 53,Ayurveda,Metabolic Disorders,XG63690,ICD-11 TM2 description for term 53,BA476,0.9
+NAM054,Traditional Term 54,Ayurveda,Metabolic Disorders,XG58262,ICD-11 TM2 description for term 54,BD291,0.9
+NAM055,Traditional Term 55,Ayurveda,Skin Conditions,XB72278,ICD-11 TM2 description for term 55,BD437,0.95
+NAM056,Traditional Term 56,Unani,Metabolic Disorders,XG40671,ICD-11 TM2 description for term 56,BD388,0.96
+NAM057,Traditional Term 57,Siddha,Metabolic Disorders,XB10660,ICD-11 TM2 description for term 57,BB559,0.88
+NAM058,Traditional Term 58,Ayurveda,Respiratory System Disorders,XG79719,ICD-11 TM2 description for term 58,BA915,0.95
+NAM059,Traditional Term 59,Ayurveda,Respiratory System Disorders,XF14864,ICD-11 TM2 description for term 59,BD122,0.9
+NAM060,Traditional Term 60,Ayurveda,Metabolic Disorders,XA93791,ICD-11 TM2 description for term 60,BA695,0.92
+NAM061,Traditional Term 61,Ayurveda,Respiratory System Disorders,XF91942,ICD-11 TM2 description for term 61,BC339,0.92
+NAM062,Traditional Term 62,Unani,Digestive System Disorders,XG52223,ICD-11 TM2 description for term 62,BD239,0.97
+NAM063,Traditional Term 63,Siddha,Skin Conditions,XB78775,ICD-11 TM2 description for term 63,BC599,0.93
+NAM064,Traditional Term 64,Ayurveda,Digestive System Disorders,XM46561,ICD-11 TM2 description for term 64,BD291,0.93
+NAM065,Traditional Term 65,Ayurveda,Skin Conditions,XG54200,ICD-11 TM2 description for term 65,BB227,0.91
+NAM066,Traditional Term 66,Unani,Respiratory System Disorders,XF36291,ICD-11 TM2 description for term 66,BD906,0.92
+NAM067,Traditional Term 67,Siddha,Metabolic Disorders,XG97010,ICD-11 TM2 description for term 67,BB876,0.91
+NAM068,Traditional Term 68,Ayurveda,Respiratory System Disorders,XM42262,ICD-11 TM2 description for term 68,BD758,0.87
+NAM069,Traditional Term 69,Siddha,Musculoskeletal Disorders,XB21684,ICD-11 TM2 description for term 69,BA427,0.98
+NAM070,Traditional Term 70,Unani,Skin Conditions,XM39135,ICD-11 TM2 description for term 70,BC695,0.95
+NAM071,Traditional Term 71,Unani,Musculoskeletal Disorders,XA69365,ICD-11 TM2 description for term 71,BA737,0.92
+NAM072,Traditional Term 72,Unani,Musculoskeletal Disorders,XB27003,ICD-11 TM2 description for term 72,BB365,0.9
+NAM073,Traditional Term 73,Siddha,Musculoskeletal Disorders,XA54268,ICD-11 TM2 description for term 73,BC518,0.92
+NAM074,Traditional Term 74,Ayurveda,Musculoskeletal Disorders,XA70234,ICD-11 TM2 description for term 74,BB136,0.89
+NAM075,Traditional Term 75,Siddha,Digestive System Disorders,XG50608,ICD-11 TM2 description for term 75,BC772,0.89
+NAM076,Traditional Term 76,Siddha,Digestive System Disorders,XA64580,ICD-11 TM2 description for term 76,BD141,0.9
+NAM077,Traditional Term 77,Unani,Respiratory System Disorders,XA95607,ICD-11 TM2 description for term 77,BD848,0.92
+NAM078,Traditional Term 78,Siddha,Digestive System Disorders,XB30217,ICD-11 TM2 description for term 78,BD853,0.86
+NAM079,Traditional Term 79,Siddha,Metabolic Disorders,XM27632,ICD-11 TM2 description for term 79,BD714,0.97
+NAM080,Traditional Term 80,Unani,Musculoskeletal Disorders,XM39656,ICD-11 TM2 description for term 80,BC722,0.93
+NAM081,Traditional Term 81,Unani,Respiratory System Disorders,XB22909,ICD-11 TM2 description for term 81,BB615,0.86
+NAM082,Traditional Term 82,Siddha,Digestive System Disorders,XF40697,ICD-11 TM2 description for term 82,BB847,0.99
+NAM083,Traditional Term 83,Unani,Musculoskeletal Disorders,XA68529,ICD-11 TM2 description for term 83,BB990,0.87
+NAM084,Traditional Term 84,Unani,Metabolic Disorders,XA35079,ICD-11 TM2 description for term 84,BC937,0.93
+NAM085,Traditional Term 85,Siddha,Digestive System Disorders,XF89206,ICD-11 TM2 description for term 85,BD350,0.97
+NAM086,Traditional Term 86,Siddha,Metabolic Disorders,XB62328,ICD-11 TM2 description for term 86,BD629,0.97
+NAM087,Traditional Term 87,Siddha,Metabolic Disorders,XG27120,ICD-11 TM2 description for term 87,BA506,0.94
+NAM088,Traditional Term 88,Siddha,Skin Conditions,XF20303,ICD-11 TM2 description for term 88,BD540,0.88
+NAM089,Traditional Term 89,Ayurveda,Metabolic Disorders,XF30366,ICD-11 TM2 description for term 89,BC459,0.89
+NAM090,Traditional Term 90,Ayurveda,Respiratory System Disorders,XF86413,ICD-11 TM2 description for term 90,BD886,0.86
+NAM091,Traditional Term 91,Siddha,Skin Conditions,XM79742,ICD-11 TM2 description for term 91,BC514,0.93
+NAM092,Traditional Term 92,Unani,Skin Conditions,XF29898,ICD-11 TM2 description for term 92,BB479,0.86
+NAM093,Traditional Term 93,Ayurveda,Musculoskeletal Disorders,XB80083,ICD-11 TM2 description for term 93,BB472,1.0
+NAM094,Traditional Term 94,Ayurveda,Musculoskeletal Disorders,XM89111,ICD-11 TM2 description for term 94,BC224,0.88
+NAM095,Traditional Term 95,Unani,Metabolic Disorders,XA83334,ICD-11 TM2 description for term 95,BA680,0.98
+NAM096,Traditional Term 96,Ayurveda,Digestive System Disorders,XA83038,ICD-11 TM2 description for term 96,BA559,0.87
+NAM097,Traditional Term 97,Ayurveda,Respiratory System Disorders,XA68980,ICD-11 TM2 description for term 97,BB487,0.86
+NAM098,Traditional Term 98,Ayurveda,Skin Conditions,XB78927,ICD-11 TM2 description for term 98,BB450,0.97
+NAM099,Traditional Term 99,Unani,Musculoskeletal Disorders,XM27041,ICD-11 TM2 description for term 99,BC211,0.85
+NAM100,Traditional Term 100,Siddha,Digestive System Disorders,XB54159,ICD-11 TM2 description for term 100,BD563,0.86
+NAM101,Traditional Term 101,Unani,Respiratory System Disorders,XB36330,ICD-11 TM2 description for term 101,BC793,0.96
+NAM102,Traditional Term 102,Ayurveda,Digestive System Disorders,XA50408,ICD-11 TM2 description for term 102,BA699,0.94
+NAM103,Traditional Term 103,Unani,Digestive System Disorders,XF10389,ICD-11 TM2 description for term 103,BD159,0.9
+NAM104,Traditional Term 104,Ayurveda,Respiratory System Disorders,XG63766,ICD-11 TM2 description for term 104,BB419,0.91
+NAM105,Traditional Term 105,Ayurveda,Respiratory System Disorders,XB21778,ICD-11 TM2 description for term 105,BC776,0.96
+NAM106,Traditional Term 106,Unani,Musculoskeletal Disorders,XG28709,ICD-11 TM2 description for term 106,BD660,0.86
+NAM107,Traditional Term 107,Unani,Musculoskeletal Disorders,XF57136,ICD-11 TM2 description for term 107,BA429,0.98
+NAM108,Traditional Term 108,Siddha,Skin Conditions,XM95445,ICD-11 TM2 description for term 108,BB832,0.95
+NAM109,Traditional Term 109,Ayurveda,Digestive System Disorders,XA94006,ICD-11 TM2 description for term 109,BB724,0.86
+NAM110,Traditional Term 110,Unani,Metabolic Disorders,XF62087,ICD-11 TM2 description for term 110,BA531,0.92
+NAM111,Traditional Term 111,Unani,Skin Conditions,XF97585,ICD-11 TM2 description for term 111,BD396,0.94
+NAM112,Traditional Term 112,Ayurveda,Musculoskeletal Disorders,XG51286,ICD-11 TM2 description for term 112,BA341,0.88
+NAM113,Traditional Term 113,Siddha,Respiratory System Disorders,XB67988,ICD-11 TM2 description for term 113,BD109,0.97
+NAM114,Traditional Term 114,Ayurveda,Musculoskeletal Disorders,XM79460,ICD-11 TM2 description for term 114,BB163,0.87
+NAM115,Traditional Term 115,Siddha,Digestive System Disorders,XA37864,ICD-11 TM2 description for term 115,BC712,0.95
+NAM116,Traditional Term 116,Ayurveda,Respiratory System Disorders,XF40847,ICD-11 TM2 description for term 116,BB331,0.89
+NAM117,Traditional Term 117,Siddha,Digestive System Disorders,XA53677,ICD-11 TM2 description for term 117,BA561,0.93
+NAM118,Traditional Term 118,Ayurveda,Metabolic Disorders,XB89138,ICD-11 TM2 description for term 118,BB150,0.95
+NAM119,Traditional Term 119,Unani,Respiratory System Disorders,XM81770,ICD-11 TM2 description for term 119,BA428,0.88
+NAM120,Traditional Term 120,Unani,Musculoskeletal Disorders,XA65102,ICD-11 TM2 description for term 120,BA128,0.99
+NAM121,Traditional Term 121,Ayurveda,Skin Conditions,XG63007,ICD-11 TM2 description for term 121,BD548,0.87
+NAM122,Traditional Term 122,Siddha,Digestive System Disorders,XA40624,ICD-11 TM2 description for term 122,BC318,0.96
+NAM123,Traditional Term 123,Ayurveda,Musculoskeletal Disorders,XA70108,ICD-11 TM2 description for term 123,BD788,0.97
+NAM124,Traditional Term 124,Siddha,Digestive System Disorders,XF87902,ICD-11 TM2 description for term 124,BA730,1.0
+NAM125,Traditional Term 125,Siddha,Metabolic Disorders,XF40394,ICD-11 TM2 description for term 125,BC713,0.91
+NAM126,Traditional Term 126,Ayurveda,Skin Conditions,XB14945,ICD-11 TM2 description for term 126,BB528,0.96
+NAM127,Traditional Term 127,Unani,Digestive System Disorders,XA43890,ICD-11 TM2 description for term 127,BA830,0.98
+NAM128,Traditional Term 128,Siddha,Digestive System Disorders,XA45593,ICD-11 TM2 description for term 128,BA396,0.97
+NAM129,Traditional Term 129,Siddha,Respiratory System Disorders,XB75509,ICD-11 TM2 description for term 129,BC640,0.96
+NAM130,Traditional Term 130,Ayurveda,Musculoskeletal Disorders,XB68653,ICD-11 TM2 description for term 130,BA859,1.0
+NAM131,Traditional Term 131,Ayurveda,Metabolic Disorders,XG83856,ICD-11 TM2 description for term 131,BB424,0.92
+NAM132,Traditional Term 132,Siddha,Skin Conditions,XA34865,ICD-11 TM2 description for term 132,BA999,0.93
+NAM133,Traditional Term 133,Ayurveda,Respiratory System Disorders,XM83045,ICD-11 TM2 description for term 133,BA600,0.96
+NAM134,Traditional Term 134,Ayurveda,Musculoskeletal Disorders,XG74679,ICD-11 TM2 description for term 134,BA817,0.85
+NAM135,Traditional Term 135,Unani,Digestive System Disorders,XB50557,ICD-11 TM2 description for term 135,BB100,0.87
+NAM136,Traditional Term 136,Siddha,Skin Conditions,XG33953,ICD-11 TM2 description for term 136,BD952,0.94
+NAM137,Traditional Term 137,Siddha,Respiratory System Disorders,XF50071,ICD-11 TM2 description for term 137,BD627,0.95
+NAM138,Traditional Term 138,Ayurveda,Musculoskeletal Disorders,XM76922,ICD-11 TM2 description for term 138,BC470,0.94
+NAM139,Traditional Term 139,Ayurveda,Respiratory System Disorders,XA46029,ICD-11 TM2 description for term 139,BC168,0.99
+NAM140,Traditional Term 140,Ayurveda,Digestive System Disorders,XA38003,ICD-11 TM2 description for term 140,BA818,0.96
+NAM141,Traditional Term 141,Ayurveda,Skin Conditions,XM68535,ICD-11 TM2 description for term 141,BA912,0.99
+NAM142,Traditional Term 142,Siddha,Musculoskeletal Disorders,XB44166,ICD-11 TM2 description for term 142,BA693,0.85
+NAM143,Traditional Term 143,Unani,Respiratory System Disorders,XM12640,ICD-11 TM2 description for term 143,BB926,0.98
+NAM144,Traditional Term 144,Unani,Musculoskeletal Disorders,XM92354,ICD-11 TM2 description for term 144,BD499,0.94
+NAM145,Traditional Term 145,Unani,Digestive System Disorders,XF24056,ICD-11 TM2 description for term 145,BC564,0.96
+NAM146,Traditional Term 146,Unani,Metabolic Disorders,XA85011,ICD-11 TM2 description for term 146,BA258,0.87
+NAM147,Traditional Term 147,Siddha,Skin Conditions,XA33299,ICD-11 TM2 description for term 147,BA146,0.86
+NAM148,Traditional Term 148,Unani,Musculoskeletal Disorders,XG72763,ICD-11 TM2 description for term 148,BD407,0.99
+NAM149,Traditional Term 149,Unani,Metabolic Disorders,XM55805,ICD-11 TM2 description for term 149,BC140,0.92
+NAM150,Traditional Term 150,Unani,Respiratory System Disorders,XA69464,ICD-11 TM2 description for term 150,BD201,0.94
+NAM151,Traditional Term 151,Siddha,Skin Conditions,XA61568,ICD-11 TM2 description for term 151,BA455,0.89
+NAM152,Traditional Term 152,Ayurveda,Digestive System Disorders,XM21342,ICD-11 TM2 description for term 152,BD617,0.87
+NAM153,Traditional Term 153,Ayurveda,Musculoskeletal Disorders,XA76968,ICD-11 TM2 description for term 153,BA821,0.94
+NAM154,Traditional Term 154,Unani,Digestive System Disorders,XB15808,ICD-11 TM2 description for term 154,BD627,0.92
+NAM155,Traditional Term 155,Ayurveda,Musculoskeletal Disorders,XG90337,ICD-11 TM2 description for term 155,BC168,0.92
+NAM156,Traditional Term 156,Unani,Skin Conditions,XF46892,ICD-11 TM2 description for term 156,BD364,0.88
+NAM157,Traditional Term 157,Ayurveda,Metabolic Disorders,XA64761,ICD-11 TM2 description for term 157,BD558,0.98
+NAM158,Traditional Term 158,Siddha,Musculoskeletal Disorders,XB78512,ICD-11 TM2 description for term 158,BC710,0.99
+NAM159,Traditional Term 159,Ayurveda,Metabolic Disorders,XB96744,ICD-11 TM2 description for term 159,BB754,0.89
+NAM160,Traditional Term 160,Ayurveda,Digestive System Disorders,XA76161,ICD-11 TM2 description for term 160,BB636,0.94
+NAM161,Traditional Term 161,Ayurveda,Musculoskeletal Disorders,XA23939,ICD-11 TM2 description for term 161,BA418,0.87
+NAM162,Traditional Term 162,Ayurveda,Musculoskeletal Disorders,XB76212,ICD-11 TM2 description for term 162,BA776,0.95
+NAM163,Traditional Term 163,Siddha,Musculoskeletal Disorders,XM12608,ICD-11 TM2 description for term 163,BC254,0.93
+NAM164,Traditional Term 164,Ayurveda,Musculoskeletal Disorders,XB82926,ICD-11 TM2 description for term 164,BB478,0.94
+NAM165,Traditional Term 165,Ayurveda,Musculoskeletal Disorders,XF64456,ICD-11 TM2 description for term 165,BA198,0.94
+NAM166,Traditional Term 166,Siddha,Metabolic Disorders,XF12936,ICD-11 TM2 description for term 166,BD321,0.92
+NAM167,Traditional Term 167,Ayurveda,Digestive System Disorders,XG96748,ICD-11 TM2 description for term 167,BC569,0.94
+NAM168,Traditional Term 168,Ayurveda,Skin Conditions,XA71979,ICD-11 TM2 description for term 168,BB599,0.86
+NAM169,Traditional Term 169,Ayurveda,Respiratory System Disorders,XF81824,ICD-11 TM2 description for term 169,BA511,0.99
+NAM170,Traditional Term 170,Siddha,Metabolic Disorders,XA30805,ICD-11 TM2 description for term 170,BB271,0.95
+NAM171,Traditional Term 171,Ayurveda,Musculoskeletal Disorders,XB16291,ICD-11 TM2 description for term 171,BC224,0.92
+NAM172,Traditional Term 172,Unani,Musculoskeletal Disorders,XM70784,ICD-11 TM2 description for term 172,BB165,0.96
+NAM173,Traditional Term 173,Ayurveda,Musculoskeletal Disorders,XM96362,ICD-11 TM2 description for term 173,BC198,0.9
+NAM174,Traditional Term 174,Ayurveda,Metabolic Disorders,XF42390,ICD-11 TM2 description for term 174,BA264,0.96
+NAM175,Traditional Term 175,Ayurveda,Metabolic Disorders,XM89468,ICD-11 TM2 description for term 175,BC736,0.88
+NAM176,Traditional Term 176,Ayurveda,Skin Conditions,XF68189,ICD-11 TM2 description for term 176,BB829,0.9
+NAM177,Traditional Term 177,Unani,Digestive System Disorders,XM41184,ICD-11 TM2 description for term 177,BB134,0.93
+NAM178,Traditional Term 178,Ayurveda,Metabolic Disorders,XA27135,ICD-11 TM2 description for term 178,BA905,0.93
+NAM179,Traditional Term 179,Ayurveda,Respiratory System Disorders,XA74102,ICD-11 TM2 description for term 179,BA977,0.89
+NAM180,Traditional Term 180,Ayurveda,Respiratory System Disorders,XF35332,ICD-11 TM2 description for term 180,BB129,0.9
+NAM181,Traditional Term 181,Unani,Musculoskeletal Disorders,XF33812,ICD-11 TM2 description for term 181,BA365,0.94
+NAM182,Traditional Term 182,Ayurveda,Respiratory System Disorders,XM84299,ICD-11 TM2 description for term 182,BC431,0.99
+NAM183,Traditional Term 183,Ayurveda,Musculoskeletal Disorders,XM90188,ICD-11 TM2 description for term 183,BA675,0.99
+NAM184,Traditional Term 184,Ayurveda,Metabolic Disorders,XM55078,ICD-11 TM2 description for term 184,BC304,0.9
+NAM185,Traditional Term 185,Ayurveda,Metabolic Disorders,XA34455,ICD-11 TM2 description for term 185,BD554,0.97
+NAM186,Traditional Term 186,Siddha,Skin Conditions,XM73978,ICD-11 TM2 description for term 186,BC587,0.93
+NAM187,Traditional Term 187,Siddha,Skin Conditions,XM68259,ICD-11 TM2 description for term 187,BA990,0.86
+NAM188,Traditional Term 188,Ayurveda,Skin Conditions,XA18844,ICD-11 TM2 description for term 188,BC722,0.97
+NAM189,Traditional Term 189,Siddha,Metabolic Disorders,XM81777,ICD-11 TM2 description for term 189,BA793,0.93
+NAM190,Traditional Term 190,Ayurveda,Digestive System Disorders,XM37172,ICD-11 TM2 description for term 190,BB704,0.89
+NAM191,Traditional Term 191,Ayurveda,Musculoskeletal Disorders,XM85507,ICD-11 TM2 description for term 191,BB351,0.95
+NAM192,Traditional Term 192,Siddha,Respiratory System Disorders,XM61767,ICD-11 TM2 description for term 192,BA887,0.9
+NAM193,Traditional Term 193,Ayurveda,Metabolic Disorders,XF54884,ICD-11 TM2 description for term 193,BD399,0.87
+NAM194,Traditional Term 194,Ayurveda,Musculoskeletal Disorders,XM14389,ICD-11 TM2 description for term 194,BB669,0.86
+NAM195,Traditional Term 195,Siddha,Respiratory System Disorders,XG61869,ICD-11 TM2 description for term 195,BC430,0.98
+NAM196,Traditional Term 196,Ayurveda,Skin Conditions,XF74365,ICD-11 TM2 description for term 196,BD130,0.89
+NAM197,Traditional Term 197,Unani,Digestive System Disorders,XG73898,ICD-11 TM2 description for term 197,BA511,0.94
+NAM198,Traditional Term 198,Siddha,Skin Conditions,XG38845,ICD-11 TM2 description for term 198,BB699,0.95
+NAM199,Traditional Term 199,Unani,Skin Conditions,XF51832,ICD-11 TM2 description for term 199,BD350,0.99
+NAM200,Traditional Term 200,Unani,Metabolic Disorders,XG53558,ICD-11 TM2 description for term 200,BD547,0.94
+NAM201,Khansi (Khasi),Ayurveda,Respiratory System Disorders,CA80Y,Cough due to respiratory irritation,CA80Y,0.95
+NAM202,Jwar,Ayurveda,General Symptoms,MG50,Fever unspecified,MG50,0.98
+NAM203,Shirah Shool,Ayurveda,Neurological Disorders,8A80Y,Headache unspecified,8A80Y,0.92
+NAM204,Khasi,Siddha,Respiratory System Disorders,CA80Y,Dry cough,CA80Y,0.94
+NAM205,Kai Kharab,Unani,Respiratory System Disorders,CA03,Sore throat,CA03,0.89
+NAM206,Sardi Zukam,Unani,Respiratory System Disorders,CA00,Common cold,CA00,0.96
+NAM207,Pet Dukh,Ayurveda,Digestive System Disorders,DD90,Abdominal pain unspecified,DD90,0.91
+NAM208,Mada,Siddha,Neurological Disorders,MB40Y,Dizziness and giddiness,MB40Y,0.87
+NAM209,Vaman,Ayurveda,Digestive System Disorders,MD90,Nausea and vomiting,MD90,0.93
+NAM210,Ang Dukh,Ayurveda,Musculoskeletal Disorders,MB40,General body ache,MB40,0.88
+NAM211,Kapham,Siddha,Respiratory System Disorders,CA80,Productive cough with phlegm,CA80,0.90
+NAM212,Thanda Bukhar,Unani,General Symptoms,1C62,Chills and fever,1C62,0.85
+NAM213,Sir Dard,Unani,Neurological Disorders,8A80,Tension headache,8A80,0.94
+NAM214,Acham Pet Kharab,Siddha,Digestive System Disorders,DD92,Stomach upset,DD92,0.89
+NAM215,Gardan Dukh,Ayurveda,Musculoskeletal Disorders,FB53,Neck pain,FB53,0.91

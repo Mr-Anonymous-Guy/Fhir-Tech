@@ -1,0 +1,201 @@
+NAMASTE Code,Traditional Term (AYUSH),ICD-11 TM2 Code,ICD-11 Biomedicine Code,Description
+AYU-001,Amlapitta (Hyperacidity),TM2:1001,ICD11:2001,Hyperacidity as described in AYU traditional medicine.
+AYU-002,Prameha (Diabetes),TM2:1002,ICD11:2002,Diabetes as described in AYU traditional medicine.
+AYU-003,Arshas (Piles),TM2:1003,ICD11:2003,Piles as described in AYU traditional medicine.
+AYU-004,Jwara (Fever),TM2:1004,ICD11:2004,Fever as described in AYU traditional medicine.
+AYU-005,Kasa (Cough),TM2:1005,ICD11:2005,Cough as described in AYU traditional medicine.
+AYU-006,Shotha (Inflammation),TM2:1006,ICD11:2006,Inflammation as described in AYU traditional medicine.
+AYU-007,Hikka (Hiccups),TM2:1007,ICD11:2007,Hiccups as described in AYU traditional medicine.
+AYU-008,Atisara (Diarrhea),TM2:1008,ICD11:2008,Diarrhea as described in AYU traditional medicine.
+AYU-009,Grahaṇi (IBS),TM2:1009,ICD11:2009,IBS as described in AYU traditional medicine.
+AYU-010,Pandu (Anemia),TM2:1010,ICD11:2010,Anemia as described in AYU traditional medicine.
+AYU-011,Kamala (Jaundice),TM2:1011,ICD11:2011,Jaundice as described in AYU traditional medicine.
+AYU-012,Shwasa (Asthma),TM2:1012,ICD11:2012,Asthma as described in AYU traditional medicine.
+AYU-013,Raktapitta (Bleeding disorders),TM2:1013,ICD11:2013,Bleeding disorders as described in AYU traditional medicine.
+AYU-014,Kustha (Skin disease),TM2:1014,ICD11:2014,Skin disease as described in AYU traditional medicine.
+AYU-015,Apasmara (Epilepsy),TM2:1015,ICD11:2015,Epilepsy as described in AYU traditional medicine.
+AYU-016,Medoroga (Obesity),TM2:1016,ICD11:2016,Obesity as described in AYU traditional medicine.
+AYU-017,Ardita (Facial paralysis),TM2:1017,ICD11:2017,Facial paralysis as described in AYU traditional medicine.
+AYU-018,Vatarakta (Gout),TM2:1018,ICD11:2018,Gout as described in AYU traditional medicine.
+AYU-019,Udara Roga (Abdominal disorders),TM2:1019,ICD11:2019,Abdominal disorders as described in AYU traditional medicine.
+AYU-020,Mutrakricchra (UTI),TM2:1020,ICD11:2020,UTI as described in AYU traditional medicine.
+SID-021,Vatha Roga (Rheumatism),TM2:1021,ICD11:2021,Rheumatism as described in SID traditional medicine.
+SID-022,Pitha Roga (Bile disorders),TM2:1022,ICD11:2022,Bile disorders as described in SID traditional medicine.
+SID-023,Kabha Roga (Respiratory issues),TM2:1023,ICD11:2023,Respiratory issues as described in SID traditional medicine.
+SID-024,Kirigai Noi (Epilepsy),TM2:1024,ICD11:2024,Epilepsy as described in SID traditional medicine.
+SID-025,Kuttam (Skin Lesion),TM2:1025,ICD11:2025,Skin Lesion as described in SID traditional medicine.
+SID-026,Kamaalai (Jaundice),TM2:1026,ICD11:2026,Jaundice as described in SID traditional medicine.
+SID-027,Pandu Noi (Anemia),TM2:1027,ICD11:2027,Anemia as described in SID traditional medicine.
+SID-028,Iya Noi (Asthma),TM2:1028,ICD11:2028,Asthma as described in SID traditional medicine.
+SID-029,Muppini Noi (Geriatric disorders),TM2:1029,ICD11:2029,Geriatric disorders as described in SID traditional medicine.
+SID-030,Siruneer Noi (Urinary disorders),TM2:1030,ICD11:2030,Urinary disorders as described in SID traditional medicine.
+SID-031,Kaamalai (Liver disorders),TM2:1031,ICD11:2031,Liver disorders as described in SID traditional medicine.
+SID-032,Madura Noi (Diabetes),TM2:1032,ICD11:2032,Diabetes as described in SID traditional medicine.
+SID-033,Noi Mudhal (Cancer),TM2:1033,ICD11:2033,Cancer as described in SID traditional medicine.
+SID-034,Kirani Noi (Eye disorders),TM2:1034,ICD11:2034,Eye disorders as described in SID traditional medicine.
+SID-035,Kuttam Noi (Chronic ulcer),TM2:1035,ICD11:2035,Chronic ulcer as described in SID traditional medicine.
+SID-036,Veri Noi (Viral fever),TM2:1036,ICD11:2036,Viral fever as described in SID traditional medicine.
+SID-037,Soolai Noi (Abdominal colic),TM2:1037,ICD11:2037,Abdominal colic as described in SID traditional medicine.
+SID-038,Suram Noi (Typhoid),TM2:1038,ICD11:2038,Typhoid as described in SID traditional medicine.
+SID-039,Vettai Noi (Obesity),TM2:1039,ICD11:2039,Obesity as described in SID traditional medicine.
+SID-040,Vatham Noi (Joint pain),TM2:1040,ICD11:2040,Joint pain as described in SID traditional medicine.
+UNA-041,Nazla (Cold),TM2:1041,ICD11:2041,Cold as described in UNA traditional medicine.
+UNA-042,Zukaam (Cough),TM2:1042,ICD11:2042,Cough as described in UNA traditional medicine.
+UNA-043,Humma (Fever),TM2:1043,ICD11:2043,Fever as described in UNA traditional medicine.
+UNA-044,Diyaq (Tuberculosis),TM2:1044,ICD11:2044,Tuberculosis as described in UNA traditional medicine.
+UNA-045,Bars (Leucoderma),TM2:1045,ICD11:2045,Leucoderma as described in UNA traditional medicine.
+UNA-046,Daul Madhi (Gonorrhea),TM2:1046,ICD11:2046,Gonorrhea as described in UNA traditional medicine.
+UNA-047,Ishaal (Diarrhea),TM2:1047,ICD11:2047,Diarrhea as described in UNA traditional medicine.
+UNA-048,Sauda (Melancholia),TM2:1048,ICD11:2048,Melancholia as described in UNA traditional medicine.
+UNA-049,Yarqan (Jaundice),TM2:1049,ICD11:2049,Jaundice as described in UNA traditional medicine.
+UNA-050,Hummas (Malaria),TM2:1050,ICD11:2050,Malaria as described in UNA traditional medicine.
+UNA-051,Sartan (Cancer),TM2:1051,ICD11:2051,Cancer as described in UNA traditional medicine.
+UNA-052,Sudda (Migraine),TM2:1052,ICD11:2052,Migraine as described in UNA traditional medicine.
+UNA-053,Daul Khid (Syphilis),TM2:1053,ICD11:2053,Syphilis as described in UNA traditional medicine.
+UNA-054,Shiqaq (Fissure),TM2:1054,ICD11:2054,Fissure as described in UNA traditional medicine.
+UNA-055,Istisqa (Dropsy),TM2:1055,ICD11:2055,Dropsy as described in UNA traditional medicine.
+UNA-056,Quwate Bah (Sexual weakness),TM2:1056,ICD11:2056,Sexual weakness as described in UNA traditional medicine.
+UNA-057,Waj-ul-Mafasil (Arthritis),TM2:1057,ICD11:2057,Arthritis as described in UNA traditional medicine.
+UNA-058,Warm-e-Kabid (Hepatitis),TM2:1058,ICD11:2058,Hepatitis as described in UNA traditional medicine.
+UNA-059,Tashannuj (Convulsions),TM2:1059,ICD11:2059,Convulsions as described in UNA traditional medicine.
+UNA-060,Sarataan (Tumor),TM2:1060,ICD11:2060,Tumor as described in UNA traditional medicine.
+AYU-061,Amlapitta (Hyperacidity),TM2:1061,ICD11:2061,Hyperacidity as described in AYU traditional medicine.
+AYU-062,Prameha (Diabetes),TM2:1062,ICD11:2062,Diabetes as described in AYU traditional medicine.
+AYU-063,Arshas (Piles),TM2:1063,ICD11:2063,Piles as described in AYU traditional medicine.
+AYU-064,Jwara (Fever),TM2:1064,ICD11:2064,Fever as described in AYU traditional medicine.
+AYU-065,Kasa (Cough),TM2:1065,ICD11:2065,Cough as described in AYU traditional medicine.
+AYU-066,Shotha (Inflammation),TM2:1066,ICD11:2066,Inflammation as described in AYU traditional medicine.
+AYU-067,Hikka (Hiccups),TM2:1067,ICD11:2067,Hiccups as described in AYU traditional medicine.
+AYU-068,Atisara (Diarrhea),TM2:1068,ICD11:2068,Diarrhea as described in AYU traditional medicine.
+AYU-069,Grahaṇi (IBS),TM2:1069,ICD11:2069,IBS as described in AYU traditional medicine.
+AYU-070,Pandu (Anemia),TM2:1070,ICD11:2070,Anemia as described in AYU traditional medicine.
+AYU-071,Kamala (Jaundice),TM2:1071,ICD11:2071,Jaundice as described in AYU traditional medicine.
+AYU-072,Shwasa (Asthma),TM2:1072,ICD11:2072,Asthma as described in AYU traditional medicine.
+AYU-073,Raktapitta (Bleeding disorders),TM2:1073,ICD11:2073,Bleeding disorders as described in AYU traditional medicine.
+AYU-074,Kustha (Skin disease),TM2:1074,ICD11:2074,Skin disease as described in AYU traditional medicine.
+AYU-075,Apasmara (Epilepsy),TM2:1075,ICD11:2075,Epilepsy as described in AYU traditional medicine.
+AYU-076,Medoroga (Obesity),TM2:1076,ICD11:2076,Obesity as described in AYU traditional medicine.
+AYU-077,Ardita (Facial paralysis),TM2:1077,ICD11:2077,Facial paralysis as described in AYU traditional medicine.
+AYU-078,Vatarakta (Gout),TM2:1078,ICD11:2078,Gout as described in AYU traditional medicine.
+AYU-079,Udara Roga (Abdominal disorders),TM2:1079,ICD11:2079,Abdominal disorders as described in AYU traditional medicine.
+AYU-080,Mutrakricchra (UTI),TM2:1080,ICD11:2080,UTI as described in AYU traditional medicine.
+SID-081,Vatha Roga (Rheumatism),TM2:1081,ICD11:2081,Rheumatism as described in SID traditional medicine.
+SID-082,Pitha Roga (Bile disorders),TM2:1082,ICD11:2082,Bile disorders as described in SID traditional medicine.
+SID-083,Kabha Roga (Respiratory issues),TM2:1083,ICD11:2083,Respiratory issues as described in SID traditional medicine.
+SID-084,Kirigai Noi (Epilepsy),TM2:1084,ICD11:2084,Epilepsy as described in SID traditional medicine.
+SID-085,Kuttam (Skin Lesion),TM2:1085,ICD11:2085,Skin Lesion as described in SID traditional medicine.
+SID-086,Kamaalai (Jaundice),TM2:1086,ICD11:2086,Jaundice as described in SID traditional medicine.
+SID-087,Pandu Noi (Anemia),TM2:1087,ICD11:2087,Anemia as described in SID traditional medicine.
+SID-088,Iya Noi (Asthma),TM2:1088,ICD11:2088,Asthma as described in SID traditional medicine.
+SID-089,Muppini Noi (Geriatric disorders),TM2:1089,ICD11:2089,Geriatric disorders as described in SID traditional medicine.
+SID-090,Siruneer Noi (Urinary disorders),TM2:1090,ICD11:2090,Urinary disorders as described in SID traditional medicine.
+SID-091,Kaamalai (Liver disorders),TM2:1091,ICD11:2091,Liver disorders as described in SID traditional medicine.
+SID-092,Madura Noi (Diabetes),TM2:1092,ICD11:2092,Diabetes as described in SID traditional medicine.
+SID-093,Noi Mudhal (Cancer),TM2:1093,ICD11:2093,Cancer as described in SID traditional medicine.
+SID-094,Kirani Noi (Eye disorders),TM2:1094,ICD11:2094,Eye disorders as described in SID traditional medicine.
+SID-095,Kuttam Noi (Chronic ulcer),TM2:1095,ICD11:2095,Chronic ulcer as described in SID traditional medicine.
+SID-096,Veri Noi (Viral fever),TM2:1096,ICD11:2096,Viral fever as described in SID traditional medicine.
+SID-097,Soolai Noi (Abdominal colic),TM2:1097,ICD11:2097,Abdominal colic as described in SID traditional medicine.
+SID-098,Suram Noi (Typhoid),TM2:1098,ICD11:2098,Typhoid as described in SID traditional medicine.
+SID-099,Vettai Noi (Obesity),TM2:1099,ICD11:2099,Obesity as described in SID traditional medicine.
+SID-100,Vatham Noi (Joint pain),TM2:1100,ICD11:2100,Joint pain as described in SID traditional medicine.
+UNA-101,Nazla (Cold),TM2:1101,ICD11:2101,Cold as described in UNA traditional medicine.
+UNA-102,Zukaam (Cough),TM2:1102,ICD11:2102,Cough as described in UNA traditional medicine.
+UNA-103,Humma (Fever),TM2:1103,ICD11:2103,Fever as described in UNA traditional medicine.
+UNA-104,Diyaq (Tuberculosis),TM2:1104,ICD11:2104,Tuberculosis as described in UNA traditional medicine.
+UNA-105,Bars (Leucoderma),TM2:1105,ICD11:2105,Leucoderma as described in UNA traditional medicine.
+UNA-106,Daul Madhi (Gonorrhea),TM2:1106,ICD11:2106,Gonorrhea as described in UNA traditional medicine.
+UNA-107,Ishaal (Diarrhea),TM2:1107,ICD11:2107,Diarrhea as described in UNA traditional medicine.
+UNA-108,Sauda (Melancholia),TM2:1108,ICD11:2108,Melancholia as described in UNA traditional medicine.
+UNA-109,Yarqan (Jaundice),TM2:1109,ICD11:2109,Jaundice as described in UNA traditional medicine.
+UNA-110,Hummas (Malaria),TM2:1110,ICD11:2110,Malaria as described in UNA traditional medicine.
+UNA-111,Sartan (Cancer),TM2:1111,ICD11:2111,Cancer as described in UNA traditional medicine.
+UNA-112,Sudda (Migraine),TM2:1112,ICD11:2112,Migraine as described in UNA traditional medicine.
+UNA-113,Daul Khid (Syphilis),TM2:1113,ICD11:2113,Syphilis as described in UNA traditional medicine.
+UNA-114,Shiqaq (Fissure),TM2:1114,ICD11:2114,Fissure as described in UNA traditional medicine.
+UNA-115,Istisqa (Dropsy),TM2:1115,ICD11:2115,Dropsy as described in UNA traditional medicine.
+UNA-116,Quwate Bah (Sexual weakness),TM2:1116,ICD11:2116,Sexual weakness as described in UNA traditional medicine.
+UNA-117,Waj-ul-Mafasil (Arthritis),TM2:1117,ICD11:2117,Arthritis as described in UNA traditional medicine.
+UNA-118,Warm-e-Kabid (Hepatitis),TM2:1118,ICD11:2118,Hepatitis as described in UNA traditional medicine.
+UNA-119,Tashannuj (Convulsions),TM2:1119,ICD11:2119,Convulsions as described in UNA traditional medicine.
+UNA-120,Sarataan (Tumor),TM2:1120,ICD11:2120,Tumor as described in UNA traditional medicine.
+AYU-121,Amlapitta (Hyperacidity),TM2:1121,ICD11:2121,Hyperacidity as described in AYU traditional medicine.
+AYU-122,Prameha (Diabetes),TM2:1122,ICD11:2122,Diabetes as described in AYU traditional medicine.
+AYU-123,Arshas (Piles),TM2:1123,ICD11:2123,Piles as described in AYU traditional medicine.
+AYU-124,Jwara (Fever),TM2:1124,ICD11:2124,Fever as described in AYU traditional medicine.
+AYU-125,Kasa (Cough),TM2:1125,ICD11:2125,Cough as described in AYU traditional medicine.
+AYU-126,Shotha (Inflammation),TM2:1126,ICD11:2126,Inflammation as described in AYU traditional medicine.
+AYU-127,Hikka (Hiccups),TM2:1127,ICD11:2127,Hiccups as described in AYU traditional medicine.
+AYU-128,Atisara (Diarrhea),TM2:1128,ICD11:2128,Diarrhea as described in AYU traditional medicine.
+AYU-129,Grahaṇi (IBS),TM2:1129,ICD11:2129,IBS as described in AYU traditional medicine.
+AYU-130,Pandu (Anemia),TM2:1130,ICD11:2130,Anemia as described in AYU traditional medicine.
+AYU-131,Kamala (Jaundice),TM2:1131,ICD11:2131,Jaundice as described in AYU traditional medicine.
+AYU-132,Shwasa (Asthma),TM2:1132,ICD11:2132,Asthma as described in AYU traditional medicine.
+AYU-133,Raktapitta (Bleeding disorders),TM2:1133,ICD11:2133,Bleeding disorders as described in AYU traditional medicine.
+AYU-134,Kustha (Skin disease),TM2:1134,ICD11:2134,Skin disease as described in AYU traditional medicine.
+AYU-135,Apasmara (Epilepsy),TM2:1135,ICD11:2135,Epilepsy as described in AYU traditional medicine.
+AYU-136,Medoroga (Obesity),TM2:1136,ICD11:2136,Obesity as described in AYU traditional medicine.
+AYU-137,Ardita (Facial paralysis),TM2:1137,ICD11:2137,Facial paralysis as described in AYU traditional medicine.
+AYU-138,Vatarakta (Gout),TM2:1138,ICD11:2138,Gout as described in AYU traditional medicine.
+AYU-139,Udara Roga (Abdominal disorders),TM2:1139,ICD11:2139,Abdominal disorders as described in AYU traditional medicine.
+AYU-140,Mutrakricchra (UTI),TM2:1140,ICD11:2140,UTI as described in AYU traditional medicine.
+SID-141,Vatha Roga (Rheumatism),TM2:1141,ICD11:2141,Rheumatism as described in SID traditional medicine.
+SID-142,Pitha Roga (Bile disorders),TM2:1142,ICD11:2142,Bile disorders as described in SID traditional medicine.
+SID-143,Kabha Roga (Respiratory issues),TM2:1143,ICD11:2143,Respiratory issues as described in SID traditional medicine.
+SID-144,Kirigai Noi (Epilepsy),TM2:1144,ICD11:2144,Epilepsy as described in SID traditional medicine.
+SID-145,Kuttam (Skin Lesion),TM2:1145,ICD11:2145,Skin Lesion as described in SID traditional medicine.
+SID-146,Kamaalai (Jaundice),TM2:1146,ICD11:2146,Jaundice as described in SID traditional medicine.
+SID-147,Pandu Noi (Anemia),TM2:1147,ICD11:2147,Anemia as described in SID traditional medicine.
+SID-148,Iya Noi (Asthma),TM2:1148,ICD11:2148,Asthma as described in SID traditional medicine.
+SID-149,Muppini Noi (Geriatric disorders),TM2:1149,ICD11:2149,Geriatric disorders as described in SID traditional medicine.
+SID-150,Siruneer Noi (Urinary disorders),TM2:1150,ICD11:2150,Urinary disorders as described in SID traditional medicine.
+SID-151,Kaamalai (Liver disorders),TM2:1151,ICD11:2151,Liver disorders as described in SID traditional medicine.
+SID-152,Madura Noi (Diabetes),TM2:1152,ICD11:2152,Diabetes as described in SID traditional medicine.
+SID-153,Noi Mudhal (Cancer),TM2:1153,ICD11:2153,Cancer as described in SID traditional medicine.
+SID-154,Kirani Noi (Eye disorders),TM2:1154,ICD11:2154,Eye disorders as described in SID traditional medicine.
+SID-155,Kuttam Noi (Chronic ulcer),TM2:1155,ICD11:2155,Chronic ulcer as described in SID traditional medicine.
+SID-156,Veri Noi (Viral fever),TM2:1156,ICD11:2156,Viral fever as described in SID traditional medicine.
+SID-157,Soolai Noi (Abdominal colic),TM2:1157,ICD11:2157,Abdominal colic as described in SID traditional medicine.
+SID-158,Suram Noi (Typhoid),TM2:1158,ICD11:2158,Typhoid as described in SID traditional medicine.
+SID-159,Vettai Noi (Obesity),TM2:1159,ICD11:2159,Obesity as described in SID traditional medicine.
+SID-160,Vatham Noi (Joint pain),TM2:1160,ICD11:2160,Joint pain as described in SID traditional medicine.
+UNA-161,Nazla (Cold),TM2:1161,ICD11:2161,Cold as described in UNA traditional medicine.
+UNA-162,Zukaam (Cough),TM2:1162,ICD11:2162,Cough as described in UNA traditional medicine.
+UNA-163,Humma (Fever),TM2:1163,ICD11:2163,Fever as described in UNA traditional medicine.
+UNA-164,Diyaq (Tuberculosis),TM2:1164,ICD11:2164,Tuberculosis as described in UNA traditional medicine.
+UNA-165,Bars (Leucoderma),TM2:1165,ICD11:2165,Leucoderma as described in UNA traditional medicine.
+UNA-166,Daul Madhi (Gonorrhea),TM2:1166,ICD11:2166,Gonorrhea as described in UNA traditional medicine.
+UNA-167,Ishaal (Diarrhea),TM2:1167,ICD11:2167,Diarrhea as described in UNA traditional medicine.
+UNA-168,Sauda (Melancholia),TM2:1168,ICD11:2168,Melancholia as described in UNA traditional medicine.
+UNA-169,Yarqan (Jaundice),TM2:1169,ICD11:2169,Jaundice as described in UNA traditional medicine.
+UNA-170,Hummas (Malaria),TM2:1170,ICD11:2170,Malaria as described in UNA traditional medicine.
+UNA-171,Sartan (Cancer),TM2:1171,ICD11:2171,Cancer as described in UNA traditional medicine.
+UNA-172,Sudda (Migraine),TM2:1172,ICD11:2172,Migraine as described in UNA traditional medicine.
+UNA-173,Daul Khid (Syphilis),TM2:1173,ICD11:2173,Syphilis as described in UNA traditional medicine.
+UNA-174,Shiqaq (Fissure),TM2:1174,ICD11:2174,Fissure as described in UNA traditional medicine.
+UNA-175,Istisqa (Dropsy),TM2:1175,ICD11:2175,Dropsy as described in UNA traditional medicine.
+UNA-176,Quwate Bah (Sexual weakness),TM2:1176,ICD11:2176,Sexual weakness as described in UNA traditional medicine.
+UNA-177,Waj-ul-Mafasil (Arthritis),TM2:1177,ICD11:2177,Arthritis as described in UNA traditional medicine.
+UNA-178,Warm-e-Kabid (Hepatitis),TM2:1178,ICD11:2178,Hepatitis as described in UNA traditional medicine.
+UNA-179,Tashannuj (Convulsions),TM2:1179,ICD11:2179,Convulsions as described in UNA traditional medicine.
+UNA-180,Sarataan (Tumor),TM2:1180,ICD11:2180,Tumor as described in UNA traditional medicine.
+AYU-181,Amlapitta (Hyperacidity),TM2:1181,ICD11:2181,Hyperacidity as described in AYU traditional medicine.
+AYU-182,Prameha (Diabetes),TM2:1182,ICD11:2182,Diabetes as described in AYU traditional medicine.
+AYU-183,Arshas (Piles),TM2:1183,ICD11:2183,Piles as described in AYU traditional medicine.
+AYU-184,Jwara (Fever),TM2:1184,ICD11:2184,Fever as described in AYU traditional medicine.
+AYU-185,Kasa (Cough),TM2:1185,ICD11:2185,Cough as described in AYU traditional medicine.
+AYU-186,Shotha (Inflammation),TM2:1186,ICD11:2186,Inflammation as described in AYU traditional medicine.
+AYU-187,Hikka (Hiccups),TM2:1187,ICD11:2187,Hiccups as described in AYU traditional medicine.
+AYU-188,Atisara (Diarrhea),TM2:1188,ICD11:2188,Diarrhea as described in AYU traditional medicine.
+AYU-189,Grahaṇi (IBS),TM2:1189,ICD11:2189,IBS as described in AYU traditional medicine.
+AYU-190,Pandu (Anemia),TM2:1190,ICD11:2190,Anemia as described in AYU traditional medicine.
+AYU-191,Kamala (Jaundice),TM2:1191,ICD11:2191,Jaundice as described in AYU traditional medicine.
+AYU-192,Shwasa (Asthma),TM2:1192,ICD11:2192,Asthma as described in AYU traditional medicine.
+AYU-193,Raktapitta (Bleeding disorders),TM2:1193,ICD11:2193,Bleeding disorders as described in AYU traditional medicine.
+AYU-194,Kustha (Skin disease),TM2:1194,ICD11:2194,Skin disease as described in AYU traditional medicine.
+AYU-195,Apasmara (Epilepsy),TM2:1195,ICD11:2195,Epilepsy as described in AYU traditional medicine.
+AYU-196,Medoroga (Obesity),TM2:1196,ICD11:2196,Obesity as described in AYU traditional medicine.
+AYU-197,Ardita (Facial paralysis),TM2:1197,ICD11:2197,Facial paralysis as described in AYU traditional medicine.
+AYU-198,Vatarakta (Gout),TM2:1198,ICD11:2198,Gout as described in AYU traditional medicine.
+AYU-199,Udara Roga (Abdominal disorders),TM2:1199,ICD11:2199,Abdominal disorders as described in AYU traditional medicine.
+AYU-200,Mutrakricchra (UTI),TM2:1200,ICD11:2200,UTI as described in AYU traditional medicine.

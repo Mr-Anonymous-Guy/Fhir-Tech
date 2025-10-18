@@ -10,7 +10,7 @@ const DemoBanner = () => {
 
   const handleSignUp = () => {
     exitDemoMode();
-    navigate('/auth');
+    navigate('/signup');
   };
 
   return (

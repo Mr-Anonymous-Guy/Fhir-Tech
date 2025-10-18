@@ -20,7 +20,7 @@ const Layout = () => {
 
   // Allow access if authenticated OR in demo mode
   if (!isAuthenticated && !isDemoMode) {
-    return <Navigate to="/auth" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   return (

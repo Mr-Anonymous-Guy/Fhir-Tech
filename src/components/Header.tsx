@@ -16,7 +16,7 @@ const Header = () => {
 
   const handleExitDemo = () => {
     exitDemoMode();
-    navigate('/auth');
+    navigate('/login');
   };
 
   return (

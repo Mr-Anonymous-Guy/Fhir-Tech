@@ -54,7 +54,7 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ isOpen, onClose }) => {
 
   const handleExitDemo = () => {
     exitDemoMode();
-    navigate('/auth');
+    navigate('/login');
     onClose();
   };
 

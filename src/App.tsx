@@ -10,6 +10,7 @@ import Auth from "./pages/Auth";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Welcome from "./pages/Welcome";
+import SignupTest from "./pages/SignupTest";
 import Dashboard from "./pages/Dashboard";
 import Search from "./pages/Search";
 import Mappings from "./pages/Mappings";
@@ -34,6 +35,7 @@ const App = () => (
               <Route path="/auth" element={<Auth />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
+              <Route path="/debug" element={<SignupTest />} />
               <Route path="/app" element={<Layout />}>
                 <Route index element={<Dashboard />} />
                 <Route path="search" element={<Search />} />

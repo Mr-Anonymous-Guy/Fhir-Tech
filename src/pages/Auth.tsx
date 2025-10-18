@@ -1,18 +1,20 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDemo } from "@/contexts/DemoContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, Play } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function Auth() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { enterDemoMode } = useDemo();
   const [loading, setLoading] = useState(false);
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
@@ -74,6 +76,12 @@ export default function Auth() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDemoMode = () => {
+    enterDemoMode();
+    navigate("/app");
+    toast.success("Welcome to Demo Mode!");
   };
 
   return (
@@ -185,6 +193,26 @@ export default function Auth() {
               </form>
             </TabsContent>
           </Tabs>
+
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-border" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-card px-2 text-muted-foreground">Or</span>
+            </div>
+          </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleDemoMode}
+            className="w-full"
+            disabled={loading}
+          >
+            <Play className="w-4 h-4 mr-2" />
+            Continue as Guest (Demo Mode)
+          </Button>
         </CardContent>
       </Card>
     </div>

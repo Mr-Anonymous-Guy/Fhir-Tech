@@ -7,6 +7,8 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { DemoProvider } from "@/contexts/DemoContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import Auth from "./pages/Auth";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
 import Welcome from "./pages/Welcome";
 import Dashboard from "./pages/Dashboard";
 import Search from "./pages/Search";
@@ -30,6 +32,8 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Welcome />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
               <Route path="/app" element={<Layout />}>
                 <Route index element={<Dashboard />} />
                 <Route path="search" element={<Search />} />

@@ -71,12 +71,12 @@ const Welcome = () => {
           <div className="flex items-center gap-3">
             <Button 
               variant="ghost" 
-              onClick={() => navigate('/auth')}
+              onClick={() => navigate('/login')}
             >
               Login
             </Button>
             <Button 
-              onClick={() => navigate('/auth')}
+              onClick={() => navigate('/signup')}
               className="bg-primary hover:bg-primary/90"
             >
               Get Started
@@ -110,7 +110,7 @@ const Welcome = () => {
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Button 
               size="lg" 
-              onClick={() => navigate('/auth')}
+              onClick={() => navigate('/signup')}
               className="bg-primary hover:bg-primary/90 text-lg px-8 py-6"
             >
               Start Mapping Now
@@ -193,7 +193,7 @@ const Welcome = () => {
           </p>
           <Button 
             size="lg" 
-            onClick={() => navigate('/auth')}
+            onClick={() => navigate('/signup')}
             className="bg-primary hover:bg-primary/90 text-lg px-10 py-6"
           >
             Create Account
@@ -207,9 +207,6 @@ const Welcome = () => {
         <div className="container mx-auto px-6 text-center">
           <p className="text-nav-foreground/70 text-sm">
             © 2025 NAMASTE FHIR Terminology Service | Ministry of AYUSH, Government of India
-          </p>
-          <p className="text-nav-foreground/50 text-xs mt-2">
-            Made by CodeMorph
           </p>
         </div>
       </footer>

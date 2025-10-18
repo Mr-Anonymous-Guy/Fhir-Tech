@@ -126,6 +126,7 @@ class EnhancedFHIRService {
 
   private generateSampleMappings(): NAMASTEMapping[] {
     return [
+      // Ayurveda - Respiratory System
       {
         namaste_code: 'AYU-001',
         namaste_term: 'Kasa (Cough)',
@@ -138,6 +139,28 @@ class EnhancedFHIRService {
       },
       {
         namaste_code: 'AYU-002',
+        namaste_term: 'Shwasa (Asthma)',
+        category: 'Ayurveda',
+        chapter_name: 'Respiratory System Disorders',
+        icd11_tm2_code: 'XF78173',
+        icd11_tm2_description: 'Traditional breathing disorder',
+        icd11_biomedicine_code: 'BB499',
+        confidence_score: 0.93
+      },
+      {
+        namaste_code: 'AYU-003',
+        namaste_term: 'Hikka (Hiccup)',
+        category: 'Ayurveda',
+        chapter_name: 'Respiratory System Disorders',
+        icd11_tm2_code: 'XF78174',
+        icd11_tm2_description: 'Traditional hiccup disorder',
+        icd11_biomedicine_code: 'BB500',
+        confidence_score: 0.89
+      },
+      
+      // Ayurveda - Digestive System
+      {
+        namaste_code: 'AYU-004',
         namaste_term: 'Amlapitta (Hyperacidity)',
         category: 'Ayurveda',
         chapter_name: 'Digestive System Disorders',
@@ -146,6 +169,134 @@ class EnhancedFHIRService {
         icd11_biomedicine_code: 'BB769',
         confidence_score: 0.92
       },
+      {
+        namaste_code: 'AYU-005',
+        namaste_term: 'Atisara (Diarrhea)',
+        category: 'Ayurveda',
+        chapter_name: 'Digestive System Disorders',
+        icd11_tm2_code: 'XB20848',
+        icd11_tm2_description: 'Traditional loose stools disorder',
+        icd11_biomedicine_code: 'BB770',
+        confidence_score: 0.94
+      },
+      {
+        namaste_code: 'AYU-006',
+        namaste_term: 'Grahani (Malabsorption)',
+        category: 'Ayurveda',
+        chapter_name: 'Digestive System Disorders',
+        icd11_tm2_code: 'XB20849',
+        icd11_tm2_description: 'Traditional absorption disorder',
+        icd11_biomedicine_code: 'BB771',
+        confidence_score: 0.87
+      },
+      {
+        namaste_code: 'AYU-007',
+        namaste_term: 'Arsha (Hemorrhoids)',
+        category: 'Ayurveda',
+        chapter_name: 'Digestive System Disorders',
+        icd11_tm2_code: 'XB20850',
+        icd11_tm2_description: 'Traditional pile disorder',
+        icd11_biomedicine_code: 'BB772',
+        confidence_score: 0.96
+      },
+      
+      // Ayurveda - Endocrine and Metabolic
+      {
+        namaste_code: 'AYU-008',
+        namaste_term: 'Madhumeha (Diabetes)',
+        category: 'Ayurveda',
+        chapter_name: 'Endocrine and Metabolic Disorders',
+        icd11_tm2_code: 'XE94567',
+        icd11_tm2_description: 'Traditional diabetes disorder',
+        icd11_biomedicine_code: 'BC123',
+        confidence_score: 0.98
+      },
+      {
+        namaste_code: 'AYU-009',
+        namaste_term: 'Prameha (Urinary Disorders)',
+        category: 'Ayurveda',
+        chapter_name: 'Endocrine and Metabolic Disorders',
+        icd11_tm2_code: 'XE94568',
+        icd11_tm2_description: 'Traditional urinary disorder',
+        icd11_biomedicine_code: 'BC124',
+        confidence_score: 0.91
+      },
+      {
+        namaste_code: 'AYU-010',
+        namaste_term: 'Sthaulya (Obesity)',
+        category: 'Ayurveda',
+        chapter_name: 'Endocrine and Metabolic Disorders',
+        icd11_tm2_code: 'XE94569',
+        icd11_tm2_description: 'Traditional weight disorder',
+        icd11_biomedicine_code: 'BC125',
+        confidence_score: 0.89
+      },
+      
+      // Ayurveda - Musculoskeletal
+      {
+        namaste_code: 'AYU-011',
+        namaste_term: 'Sandhivata (Arthritis)',
+        category: 'Ayurveda',
+        chapter_name: 'Musculoskeletal Disorders',
+        icd11_tm2_code: 'XF34521',
+        icd11_tm2_description: 'Traditional joint disorder',
+        icd11_biomedicine_code: 'BD456',
+        confidence_score: 0.90
+      },
+      {
+        namaste_code: 'AYU-012',
+        namaste_term: 'Amavata (Rheumatoid Arthritis)',
+        category: 'Ayurveda',
+        chapter_name: 'Musculoskeletal Disorders',
+        icd11_tm2_code: 'XF34522',
+        icd11_tm2_description: 'Traditional inflammatory joint disorder',
+        icd11_biomedicine_code: 'BD457',
+        confidence_score: 0.88
+      },
+      {
+        namaste_code: 'AYU-013',
+        namaste_term: 'Gridhrasi (Sciatica)',
+        category: 'Ayurveda',
+        chapter_name: 'Musculoskeletal Disorders',
+        icd11_tm2_code: 'XF34523',
+        icd11_tm2_description: 'Traditional nerve pain disorder',
+        icd11_biomedicine_code: 'BD458',
+        confidence_score: 0.92
+      },
+      
+      // Ayurveda - Skin Disorders
+      {
+        namaste_code: 'AYU-014',
+        namaste_term: 'Tvak Roga (Skin Disease)',
+        category: 'Ayurveda',
+        chapter_name: 'Skin and Tissue Disorders',
+        icd11_tm2_code: 'XH78901',
+        icd11_tm2_description: 'Traditional skin disorder',
+        icd11_biomedicine_code: 'BE789',
+        confidence_score: 0.87
+      },
+      {
+        namaste_code: 'AYU-015',
+        namaste_term: 'Kushtha (Chronic Skin Disease)',
+        category: 'Ayurveda',
+        chapter_name: 'Skin and Tissue Disorders',
+        icd11_tm2_code: 'XH78902',
+        icd11_tm2_description: 'Traditional chronic skin disorder',
+        icd11_biomedicine_code: 'BE790',
+        confidence_score: 0.85
+      },
+      {
+        namaste_code: 'AYU-016',
+        namaste_term: 'Dadru (Ringworm)',
+        category: 'Ayurveda',
+        chapter_name: 'Skin and Tissue Disorders',
+        icd11_tm2_code: 'XH78903',
+        icd11_tm2_description: 'Traditional fungal skin disorder',
+        icd11_biomedicine_code: 'BE791',
+        confidence_score: 0.93
+      },
+      
+      // Siddha System
       {
         namaste_code: 'SID-001',
         namaste_term: 'Vayu Gunmam (Joint Pain)',
@@ -157,6 +308,68 @@ class EnhancedFHIRService {
         confidence_score: 0.88
       },
       {
+        namaste_code: 'SID-002',
+        namaste_term: 'Soolai (Abdominal Pain)',
+        category: 'Siddha',
+        chapter_name: 'Digestive System Disorders',
+        icd11_tm2_code: 'XB45678',
+        icd11_tm2_description: 'Traditional abdominal disorder',
+        icd11_biomedicine_code: 'BB567',
+        confidence_score: 0.85
+      },
+      {
+        namaste_code: 'SID-003',
+        namaste_term: 'Kumayam (Fever)',
+        category: 'Siddha',
+        chapter_name: 'Infectious Diseases',
+        icd11_tm2_code: 'XI12345',
+        icd11_tm2_description: 'Traditional fever disorder',
+        icd11_biomedicine_code: 'BF890',
+        confidence_score: 0.93
+      },
+      {
+        namaste_code: 'SID-004',
+        namaste_term: 'Iya Noigal (Respiratory Disorders)',
+        category: 'Siddha',
+        chapter_name: 'Respiratory System Disorders',
+        icd11_tm2_code: 'XF67893',
+        icd11_tm2_description: 'Traditional breathing disorder',
+        icd11_biomedicine_code: 'BB124',
+        confidence_score: 0.89
+      },
+      {
+        namaste_code: 'SID-005',
+        namaste_term: 'Karappan (Skin Disease)',
+        category: 'Siddha',
+        chapter_name: 'Skin and Tissue Disorders',
+        icd11_tm2_code: 'XH67894',
+        icd11_tm2_description: 'Traditional skin condition',
+        icd11_biomedicine_code: 'BE125',
+        confidence_score: 0.86
+      },
+      {
+        namaste_code: 'SID-006',
+        namaste_term: 'Neerizhivu (Diabetes)',
+        category: 'Siddha',
+        chapter_name: 'Endocrine and Metabolic Disorders',
+        icd11_tm2_code: 'XE67895',
+        icd11_tm2_description: 'Traditional diabetes condition',
+        icd11_biomedicine_code: 'BC126',
+        confidence_score: 0.94
+      },
+      {
+        namaste_code: 'SID-007',
+        namaste_term: 'Moolam (Hemorrhoids)',
+        category: 'Siddha',
+        chapter_name: 'Digestive System Disorders',
+        icd11_tm2_code: 'XB67896',
+        icd11_tm2_description: 'Traditional pile condition',
+        icd11_biomedicine_code: 'BB127',
+        confidence_score: 0.91
+      },
+      
+      // Unani System
+      {
         namaste_code: 'UNA-001',
         namaste_term: 'Nazla (Common Cold)',
         category: 'Unani',
@@ -164,6 +377,96 @@ class EnhancedFHIRService {
         icd11_tm2_code: 'XF67892',
         icd11_tm2_description: 'Traditional cold disorder',
         icd11_biomedicine_code: 'BB123',
+        confidence_score: 0.90
+      },
+      {
+        namaste_code: 'UNA-002',
+        namaste_term: 'Ziabetus (Diabetes)',
+        category: 'Unani',
+        chapter_name: 'Endocrine and Metabolic Disorders',
+        icd11_tm2_code: 'XE56789',
+        icd11_tm2_description: 'Traditional diabetes disorder',
+        icd11_biomedicine_code: 'BC456',
+        confidence_score: 0.96
+      },
+      {
+        namaste_code: 'UNA-003',
+        namaste_term: 'Waja ul Mafasil (Joint Pain)',
+        category: 'Unani',
+        chapter_name: 'Musculoskeletal Disorders',
+        icd11_tm2_code: 'XF23456',
+        icd11_tm2_description: 'Traditional joint pain disorder',
+        icd11_biomedicine_code: 'BD567',
+        confidence_score: 0.89
+      },
+      {
+        namaste_code: 'UNA-004',
+        namaste_term: 'Baras (Skin Disorder)',
+        category: 'Unani',
+        chapter_name: 'Skin and Tissue Disorders',
+        icd11_tm2_code: 'XH34567',
+        icd11_tm2_description: 'Traditional skin disorder',
+        icd11_biomedicine_code: 'BE345',
+        confidence_score: 0.84
+      },
+      {
+        namaste_code: 'UNA-005',
+        namaste_term: 'Qabz (Constipation)',
+        category: 'Unani',
+        chapter_name: 'Digestive System Disorders',
+        icd11_tm2_code: 'XB34568',
+        icd11_tm2_description: 'Traditional bowel disorder',
+        icd11_biomedicine_code: 'BB346',
+        confidence_score: 0.92
+      },
+      {
+        namaste_code: 'UNA-006',
+        namaste_term: 'Humma (Fever)',
+        category: 'Unani',
+        chapter_name: 'Infectious Diseases',
+        icd11_tm2_code: 'XI34569',
+        icd11_tm2_description: 'Traditional fever condition',
+        icd11_biomedicine_code: 'BF347',
+        confidence_score: 0.88
+      },
+      {
+        namaste_code: 'UNA-007',
+        namaste_term: 'Sual (Cough)',
+        category: 'Unani',
+        chapter_name: 'Respiratory System Disorders',
+        icd11_tm2_code: 'XF34570',
+        icd11_tm2_description: 'Traditional cough condition',
+        icd11_biomedicine_code: 'BB348',
+        confidence_score: 0.91
+      },
+      {
+        namaste_code: 'UNA-008',
+        namaste_term: 'Aseer (Heart Disease)',
+        category: 'Unani',
+        chapter_name: 'Cardiovascular Disorders',
+        icd11_tm2_code: 'XC34571',
+        icd11_tm2_description: 'Traditional heart condition',
+        icd11_biomedicine_code: 'BH349',
+        confidence_score: 0.87
+      },
+      {
+        namaste_code: 'UNA-009',
+        namaste_term: 'Wajaul Kafal (Lower Back Pain)',
+        category: 'Unani',
+        chapter_name: 'Musculoskeletal Disorders',
+        icd11_tm2_code: 'XF34572',
+        icd11_tm2_description: 'Traditional back pain condition',
+        icd11_biomedicine_code: 'BD350',
+        confidence_score: 0.93
+      },
+      {
+        namaste_code: 'UNA-010',
+        namaste_term: 'Safra (Gastritis)',
+        category: 'Unani',
+        chapter_name: 'Digestive System Disorders',
+        icd11_tm2_code: 'XB34573',
+        icd11_tm2_description: 'Traditional stomach inflammation',
+        icd11_biomedicine_code: 'BB351',
         confidence_score: 0.90
       }
     ];

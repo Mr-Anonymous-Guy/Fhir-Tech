@@ -3,7 +3,7 @@ import { useDemo } from '@/contexts/DemoContext';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { LogOut, User, Shield, Play } from 'lucide-react';
+import { LogOut, User, Shield, Play, Power } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,7 +21,7 @@ const Header = () => {
 
   const handleExitDemo = () => {
     exitDemoMode();
-    navigate('/');
+    navigate('/auth');
   };
 
   return (
@@ -40,6 +40,18 @@ const Header = () => {
       </div>
 
       <div className="flex items-center gap-4">
+        {isDemoMode && (
+          <Button 
+            onClick={handleExitDemo}
+            variant="destructive"
+            size="sm"
+            className="flex items-center gap-2 font-medium"
+          >
+            <Power className="w-4 h-4" />
+            Exit Demo Mode
+          </Button>
+        )}
+        
         {isDemoMode ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

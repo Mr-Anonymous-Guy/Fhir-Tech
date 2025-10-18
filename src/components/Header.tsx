@@ -51,7 +51,7 @@ const Header = () => {
                 <span className="hidden md:inline">Demo User</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuContent align="end" className="w-56 backdrop-blur-md bg-card/95 border border-border/50 shadow-2xl">
               <DropdownMenuLabel>
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-medium leading-none">Demo Mode</p>
@@ -78,7 +78,7 @@ const Header = () => {
                 <span className="hidden md:inline">{user?.email}</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuContent align="end" className="w-56 backdrop-blur-md bg-card/95 border border-border/50 shadow-2xl">
               <DropdownMenuLabel>
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-medium leading-none">{user?.user_metadata?.full_name || 'User'}</p>

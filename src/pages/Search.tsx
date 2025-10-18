@@ -22,6 +22,7 @@ const Search = () => {
   const [fhirResource, setFhirResource] = useState<any>(null);
   const [suggestions, setSuggestions] = useState<SearchResult[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
 
@@ -29,12 +30,15 @@ const Search = () => {
   useEffect(() => {
     if (query.length >= 2) {
       const timer = setTimeout(async () => {
+        setSuggestionsLoading(true);
         try {
           const response = await enhancedFhirService.lookup(query, 1, 5);
           setSuggestions(response.results);
           setShowSuggestions(true);
         } catch (error) {
           console.error('Suggestion search failed:', error);
+        } finally {
+          setSuggestionsLoading(false);
         }
       }, 300);
 
@@ -42,6 +46,7 @@ const Search = () => {
     } else {
       setSuggestions([]);
       setShowSuggestions(false);
+      setSuggestionsLoading(false);
     }
   }, [query]);
 
@@ -268,12 +273,17 @@ const Search = () => {
             </div>
 
             {/* Suggestions Dropdown */}
-            {showSuggestions && suggestions.length > 0 && (
+            {(showSuggestions && suggestions.length > 0) || suggestionsLoading ? (
               <div
                 ref={suggestionsRef}
                 className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-glow z-50 max-h-60 overflow-y-auto"
               >
-                {suggestions.map((suggestion, index) => (
+                {suggestionsLoading ? (
+                  <div className="p-4 text-center">
+                    <LoadingSpinner size="sm" text="Searching..." />
+                  </div>
+                ) : (
+                  suggestions.map((suggestion, index) => (
                   <div
                     key={index}
                     className="p-3 hover:bg-accent cursor-pointer border-b border-border last:border-0"
@@ -297,9 +307,10 @@ const Search = () => {
                       </Badge>
                     </div>
                   </div>
-                ))}
+                  ))
+                )}
               </div>
-            )}
+            ) : null}
           </div>
         </CardContent>
       </Card>

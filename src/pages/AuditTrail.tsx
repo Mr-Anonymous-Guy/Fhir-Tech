@@ -15,6 +15,8 @@ const AuditTrail = () => {
   const [auditEntries, setAuditEntries] = useState<AuditLogEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionFilter, setActionFilter] = useState<string>('all');
+  const [timeRangeFilter, setTimeRangeFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   
@@ -22,12 +24,34 @@ const AuditTrail = () => {
 
   useEffect(() => {
     loadAuditLog();
-  }, [page, actionFilter]);
+  }, [page, actionFilter, timeRangeFilter, statusFilter]);
+
+  const getTimeRangeFilter = () => {
+    const now = new Date();
+    switch (timeRangeFilter) {
+      case 'today':
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        return { startDate: today.toISOString() };
+      case 'week':
+        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        return { startDate: weekAgo.toISOString() };
+      case 'month':
+        const monthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+        return { startDate: monthAgo.toISOString() };
+      default:
+        return {};
+    }
+  };
 
   const loadAuditLog = async () => {
     setLoading(true);
     try {
-      const filters = { action: actionFilter !== 'all' ? actionFilter : undefined };
+      const filters = {
+        action: actionFilter !== 'all' ? actionFilter : undefined,
+        success: statusFilter === 'success' ? true : statusFilter === 'error' ? false : undefined,
+        ...getTimeRangeFilter()
+      };
+      
       const response = await enhancedFhirService.getAuditLog(page, pageSize, filters);
       
       setAuditEntries(response.entries);
@@ -117,7 +141,8 @@ const AuditTrail = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">Action Type</label>
               <Select value={actionFilter} onValueChange={setActionFilter}>
@@ -137,7 +162,7 @@ const AuditTrail = () => {
             
             <div className="space-y-2">
               <label className="text-sm font-medium">Time Range</label>
-              <Select defaultValue="all">
+              <Select value={timeRangeFilter} onValueChange={setTimeRangeFilter}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -152,7 +177,7 @@ const AuditTrail = () => {
             
             <div className="space-y-2">
               <label className="text-sm font-medium">Status</label>
-              <Select defaultValue="all">
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -163,6 +188,23 @@ const AuditTrail = () => {
                 </SelectContent>
               </Select>
             </div>
+            </div>
+            
+            {(actionFilter !== 'all' || timeRangeFilter !== 'all' || statusFilter !== 'all') && (
+              <div className="flex justify-end">
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setActionFilter('all');
+                    setTimeRangeFilter('all');
+                    setStatusFilter('all');
+                    setPage(1);
+                  }}
+                >
+                  Clear All Filters
+                </Button>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

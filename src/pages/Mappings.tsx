@@ -35,10 +35,39 @@ const Mappings = () => {
     loadMetadata();
   }, [page, filters]);
 
+  // Dynamic search with debouncing
+  useEffect(() => {
+    if (searchQuery.length >= 2) {
+      const timer = setTimeout(() => {
+        setFilters(prev => ({ ...prev, search: searchQuery }));
+        setPage(1);
+      }, 300);
+      return () => clearTimeout(timer);
+    } else if (searchQuery === '' && filters.search) {
+      setFilters(prev => ({ ...prev, search: undefined }));
+      setPage(1);
+    }
+  }, [searchQuery]);
+
   const loadMappings = async () => {
     setLoading(true);
     try {
-      const response = await enhancedFhirService.getAllMappings(filters, page, pageSize);
+      let response;
+      if (filters.search) {
+        // Use search API when there's a search query
+        const searchResponse = await enhancedFhirService.lookup(filters.search, page, pageSize);
+        response = {
+          mappings: searchResponse.results.map(result => result.namaste),
+          total: searchResponse.total
+        };
+      } else {
+        // Use getAllMappings for filtering without search
+        const filterParams = {
+          category: filters.category,
+          chapter: filters.chapter
+        };
+        response = await enhancedFhirService.getAllMappings(filterParams, page, pageSize);
+      }
       setMappings(response.mappings);
       setTotal(response.total);
     } catch (error) {
@@ -141,16 +170,19 @@ const Mappings = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">Search</label>
-              <div className="flex gap-2">
+              <div className="relative">
                 <Input
-                  placeholder="Search terms..."
+                  placeholder="Search terms... (dynamic search as you type)"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                  className="pr-10"
                 />
-                <Button onClick={handleSearch} size="sm">
-                  <Search className="w-4 h-4" />
-                </Button>
+                <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                {searchQuery && (
+                  <div className="absolute right-10 top-1/2 transform -translate-y-1/2">
+                    <div className="animate-pulse h-2 w-2 bg-primary rounded-full" />
+                  </div>
+                )}
               </div>
             </div>
             
@@ -207,7 +239,7 @@ const Mappings = () => {
               Terminology Mappings
             </div>
             <Badge variant="outline">
-              {total} total mappings
+              {filters.search ? `${total} search results` : `${total} total mappings`}
             </Badge>
           </CardTitle>
         </CardHeader>

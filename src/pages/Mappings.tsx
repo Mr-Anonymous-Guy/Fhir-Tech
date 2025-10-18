@@ -172,7 +172,7 @@ const Mappings = () => {
               <label className="text-sm font-medium">Search</label>
               <div className="relative">
                 <Input
-                  placeholder="Search terms... (dynamic search as you type)"
+                  placeholder="Search terms..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pr-10"
@@ -192,7 +192,7 @@ const Mappings = () => {
                 <SelectTrigger>
                   <SelectValue placeholder="All Categories" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="backdrop-blur-md bg-card/95 border border-border/50 shadow-2xl">
                   <SelectItem value="all">All Categories</SelectItem>
                   {categories.map(category => (
                     <SelectItem key={category} value={category}>
@@ -209,7 +209,7 @@ const Mappings = () => {
                 <SelectTrigger>
                   <SelectValue placeholder="All Chapters" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="backdrop-blur-md bg-card/95 border border-border/50 shadow-2xl">
                   <SelectItem value="all">All Chapters</SelectItem>
                   {chapters.map(chapter => (
                     <SelectItem key={chapter} value={chapter}>

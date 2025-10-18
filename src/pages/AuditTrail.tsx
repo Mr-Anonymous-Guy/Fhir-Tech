@@ -149,7 +149,7 @@ const AuditTrail = () => {
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="backdrop-blur-md bg-card/95 border border-border/50 shadow-2xl">
                   <SelectItem value="all">All Actions</SelectItem>
                   <SelectItem value="search">Search Operations</SelectItem>
                   <SelectItem value="translate">Translation Requests</SelectItem>
@@ -166,7 +166,7 @@ const AuditTrail = () => {
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="backdrop-blur-md bg-card/95 border border-border/50 shadow-2xl">
                   <SelectItem value="all">All Time</SelectItem>
                   <SelectItem value="today">Today</SelectItem>
                   <SelectItem value="week">This Week</SelectItem>
@@ -181,7 +181,7 @@ const AuditTrail = () => {
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="backdrop-blur-md bg-card/95 border border-border/50 shadow-2xl">
                   <SelectItem value="all">All Status</SelectItem>
                   <SelectItem value="success">Success Only</SelectItem>
                   <SelectItem value="error">Errors Only</SelectItem>

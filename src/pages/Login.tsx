@@ -20,7 +20,8 @@ import {
   Sparkles,
   Stethoscope,
   ChevronLeft,
-  Shield
+  Shield,
+  CheckCircle
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import NAMASTELogo from '@/components/NAMASTELogo';
@@ -40,11 +41,7 @@ const Login = () => {
     triggerOnce: true 
   });
 
-  // Redirect if already logged in
-  if (user) {
-    navigate('/app');
-    return null;
-  }
+  // Note: Removed automatic redirect to allow access even when logged in
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -245,6 +242,31 @@ const Login = () => {
           </motion.div>
         </div>
       </motion.header>
+
+      {/* Already Logged In Notice */}
+      {user && (
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative z-10 bg-success/10 border border-success/20 mx-6 mt-6 p-4 rounded-lg"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <CheckCircle className="w-5 h-5 text-success" />
+              <span className="text-success font-medium">
+                You are already logged in as {user.email}
+              </span>
+            </div>
+            <Button 
+              onClick={() => navigate('/app')} 
+              size="sm" 
+              className="bg-success hover:bg-success/90"
+            >
+              Go to App
+            </Button>
+          </div>
+        </motion.div>
+      )}
 
       {/* Main Content */}
       <div className="relative z-10 flex items-center justify-center min-h-[calc(100vh-120px)] p-6">

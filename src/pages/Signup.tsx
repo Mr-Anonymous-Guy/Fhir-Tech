@@ -46,11 +46,7 @@ const Signup = () => {
     triggerOnce: true 
   });
 
-  // Redirect if already logged in
-  if (user) {
-    navigate('/app');
-    return null;
-  }
+  // Note: Removed automatic redirect to allow access even when logged in
 
   // Password validation
   const passwordRequirements = {

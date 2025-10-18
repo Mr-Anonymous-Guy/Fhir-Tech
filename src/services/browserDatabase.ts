@@ -85,6 +85,12 @@ class BrowserDatabaseService {
     return this.isConnected && this.db !== null;
   }
 
+  async ensureConnection(): Promise<void> {
+    if (!this.isConnectedDb()) {
+      await this.connect();
+    }
+  }
+
   // Mapping operations
   async insertMappings(mappings: NAMASTEMapping[]): Promise<void> {
     if (!this.db) throw new Error('Database not connected');

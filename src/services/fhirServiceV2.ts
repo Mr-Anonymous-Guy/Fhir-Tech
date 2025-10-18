@@ -39,12 +39,13 @@ class EnhancedFHIRService {
 
   private async initialize() {
     try {
-      // Connect to MongoDB
+      // Connect to IndexedDB
       await dbService.connect();
       
       // Check if we need to seed initial data
       const stats = await dbService.getMappingStats();
       if (stats.totalMappings === 0) {
+        console.log('No existing data found, seeding initial data...');
         await this.seedInitialData();
       }
       
@@ -52,8 +53,15 @@ class EnhancedFHIRService {
       console.log('Enhanced FHIR Service initialized successfully with IndexedDB');
     } catch (error) {
       console.error('Failed to initialize FHIR Service:', error);
-      // Fall back to in-memory mode if IndexedDB is not available
-      this.isInitialized = false;
+      // Try to seed data even if connection failed
+      try {
+        await this.seedInitialData();
+        this.isInitialized = true;
+        console.log('FHIR Service initialized with fallback data');
+      } catch (seedError) {
+        console.error('Failed to seed fallback data:', seedError);
+        this.isInitialized = false;
+      }
     }
   }
 

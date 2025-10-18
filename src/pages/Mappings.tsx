@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { enhancedFhirService } from '@/services/fhirServiceV2';
 import { NAMASTEMapping } from '@/types/fhir';
+import { searchHistoryService, SearchHistoryItem } from '@/services/searchHistoryService';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import LoadingSpinner from '@/components/LoadingSpinner';
-import { Download, Search, Filter, Database } from 'lucide-react';
+import { Download, Search, Filter, Database, History, Clock, X, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface FiltersType {
@@ -27,13 +28,40 @@ const Mappings = () => {
   const [total, setTotal] = useState(0);
   const [categories, setCategories] = useState<string[]>([]);
   const [chapters, setChapters] = useState<string[]>([]);
+  const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
+  const [showHistory, setShowHistory] = useState(false);
   
   const pageSize = 20;
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const historyRef = useRef<HTMLDivElement>(null);
+
+  // Initialize search history (starts empty for new users)
+  useEffect(() => {
+    const history = searchHistoryService.getHistory('mapping');
+    setSearchHistory(history);
+  }, []);
 
   useEffect(() => {
     loadMappings();
     loadMetadata();
   }, [page, filters]);
+
+  // Handle clicks outside search history
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const clickedOutsideHistory = historyRef.current &&
+        !historyRef.current.contains(event.target as Node);
+      const clickedOutsideInput = searchInputRef.current &&
+        !searchInputRef.current.contains(event.target as Node);
+      
+      if (clickedOutsideInput && clickedOutsideHistory) {
+        setShowHistory(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Dynamic search with debouncing
   useEffect(() => {
@@ -92,8 +120,18 @@ const Mappings = () => {
   };
 
   const handleSearch = () => {
+    if (searchQuery.trim()) {
+      // Save search to history
+      searchHistoryService.addSearch(searchQuery.trim(), 'mapping');
+      
+      // Refresh search history state
+      const updatedHistory = searchHistoryService.getHistory('mapping');
+      setSearchHistory(updatedHistory);
+    }
+    
     setFilters(prev => ({ ...prev, search: searchQuery }));
     setPage(1);
+    setShowHistory(false);
   };
 
   const handleFilterChange = (key: string, value: string) => {
@@ -108,6 +146,37 @@ const Mappings = () => {
     setFilters({});
     setSearchQuery('');
     setPage(1);
+    setShowHistory(false);
+  };
+
+  const handleHistoryClick = (historyItem: SearchHistoryItem) => {
+    setSearchQuery(historyItem.query);
+    setShowHistory(false);
+    setFilters(prev => ({ ...prev, search: historyItem.query }));
+    setPage(1);
+  };
+
+  const handleRemoveFromHistory = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    searchHistoryService.removeSearch(id);
+    const updatedHistory = searchHistoryService.getHistory('mapping');
+    setSearchHistory(updatedHistory);
+  };
+
+  const handleClearHistory = () => {
+    searchHistoryService.clearHistory('mapping');
+    setSearchHistory([]);
+    toast({
+      title: 'History Cleared',
+      description: 'Search history has been cleared.',
+      variant: 'default'
+    });
+  };
+
+  const handleInputFocus = () => {
+    if (!searchQuery.trim() && searchHistory.length > 0) {
+      setShowHistory(true);
+    }
   };
 
   const downloadMappings = () => {
@@ -171,16 +240,82 @@ const Mappings = () => {
             <div className="space-y-2">
               <label className="text-sm font-medium">Search</label>
               <div className="relative">
-                <Input
-                  placeholder="Search terms..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pr-10"
-                />
-                <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                {searchQuery && (
-                  <div className="absolute right-10 top-1/2 transform -translate-y-1/2">
-                    <div className="animate-pulse h-2 w-2 bg-primary rounded-full" />
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <Input
+                      ref={searchInputRef}
+                      placeholder="Search terms..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                      onFocus={handleInputFocus}
+                      className="pr-10"
+                    />
+                    <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    {searchQuery && (
+                      <div className="absolute right-10 top-1/2 transform -translate-y-1/2">
+                        <div className="animate-pulse h-2 w-2 bg-primary rounded-full" />
+                      </div>
+                    )}
+                  </div>
+                  <Button onClick={handleSearch} size="sm">
+                    <Search className="w-4 h-4" />
+                  </Button>
+                </div>
+                
+                {/* Search History Dropdown */}
+                {showHistory && searchHistory.length > 0 && (
+                  <div
+                    ref={historyRef}
+                    className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-glow z-50 max-h-60 overflow-y-auto"
+                  >
+                    <div className="flex items-center justify-between p-3 border-b border-border bg-muted/30">
+                      <div className="flex items-center gap-2">
+                        <History className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-sm font-medium">Recent Searches</span>
+                      </div>
+                      {searchHistory.length > 0 && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleClearHistory}
+                          className="text-xs h-6 px-2"
+                        >
+                          <Trash2 className="w-3 h-3 mr-1" />
+                          Clear
+                        </Button>
+                      )}
+                    </div>
+                    {searchHistory.map((historyItem) => (
+                      <div
+                        key={historyItem.id}
+                        className="p-3 hover:bg-accent cursor-pointer border-b border-border last:border-0 group"
+                        onClick={() => handleHistoryClick(historyItem)}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 flex-1">
+                            <Clock className="w-3 h-3 text-muted-foreground" />
+                            <div className="flex-1">
+                              <p className="font-medium text-sm">{historyItem.query}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {new Date(historyItem.timestamp).toLocaleDateString()}
+                                {historyItem.resultCount !== undefined && (
+                                  <> • {historyItem.resultCount} results</>
+                                )}
+                              </p>
+                            </div>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => handleRemoveFromHistory(e, historyItem.id)}
+                            className="opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0"
+                          >
+                            <X className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>

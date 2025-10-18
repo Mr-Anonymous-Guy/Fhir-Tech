@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { enhancedFhirService } from '@/services/fhirServiceV2';
 import { NAMASTEMapping, SearchResult } from '@/types/fhir';
+import { searchHistoryService, SearchHistoryItem } from '@/services/searchHistoryService';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
 import LoadingSpinner from '@/components/LoadingSpinner';
-import { Search as SearchIcon, FileCode, Send, Copy, CheckCircle, AlertCircle } from 'lucide-react';
+import { Search as SearchIcon, FileCode, Send, Copy, CheckCircle, AlertCircle, History, Clock, X, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -22,23 +23,35 @@ const Search = () => {
   const [fhirResource, setFhirResource] = useState<any>(null);
   const [suggestions, setSuggestions] = useState<SearchResult[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
+  const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
+  const [showHistory, setShowHistory] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
+  const historyRef = useRef<HTMLDivElement>(null);
 
-  // Debounced search for suggestions
+  // Initialize search history (starts empty for new users)
+  useEffect(() => {
+    const loadSearchHistory = () => {
+      // For new users, this will return an empty array
+      const history = searchHistoryService.getHistory('search');
+      setSearchHistory(history);
+    };
+    
+    loadSearchHistory();
+  }, []);
+
+  // Debounced search for suggestions and history
   useEffect(() => {
     if (query.length >= 2) {
       const timer = setTimeout(async () => {
-        setSuggestionsLoading(true);
         try {
+          // Get search suggestions from FHIR service
           const response = await enhancedFhirService.lookup(query, 1, 5);
           setSuggestions(response.results);
           setShowSuggestions(true);
+          setShowHistory(false);
         } catch (error) {
           console.error('Suggestion search failed:', error);
-        } finally {
-          setSuggestionsLoading(false);
         }
       }, 300);
 
@@ -46,20 +59,30 @@ const Search = () => {
     } else {
       setSuggestions([]);
       setShowSuggestions(false);
-      setSuggestionsLoading(false);
+      // Show search history when input is empty but focused
+      if (document.activeElement === searchInputRef.current) {
+        setShowHistory(true);
+      }
     }
   }, [query]);
 
-  // Handle clicks outside suggestions
+  // Handle clicks outside suggestions and history
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        suggestionsRef.current &&
-        !suggestionsRef.current.contains(event.target as Node) &&
-        searchInputRef.current &&
-        !searchInputRef.current.contains(event.target as Node)
-      ) {
-        setShowSuggestions(false);
+      const clickedOutsideSuggestions = suggestionsRef.current &&
+        !suggestionsRef.current.contains(event.target as Node);
+      const clickedOutsideHistory = historyRef.current &&
+        !historyRef.current.contains(event.target as Node);
+      const clickedOutsideInput = searchInputRef.current &&
+        !searchInputRef.current.contains(event.target as Node);
+      
+      if (clickedOutsideInput) {
+        if (clickedOutsideSuggestions) {
+          setShowSuggestions(false);
+        }
+        if (clickedOutsideHistory) {
+          setShowHistory(false);
+        }
       }
     };
 
@@ -73,9 +96,18 @@ const Search = () => {
 
     setLoading(true);
     setShowSuggestions(false);
+    setShowHistory(false);
+    
     try {
       const response = await enhancedFhirService.lookup(searchTerm);
       setResults(response.results);
+      
+      // Save successful search to history
+      searchHistoryService.addSearch(searchTerm, 'search', response.results.length);
+      
+      // Refresh search history state
+      const updatedHistory = searchHistoryService.getHistory('search');
+      setSearchHistory(updatedHistory);
       
       if (response.results.length === 0) {
         toast({
@@ -99,6 +131,35 @@ const Search = () => {
     setQuery(suggestion.namaste.namaste_term);
     setShowSuggestions(false);
     handleSearch(suggestion.namaste.namaste_term);
+  };
+
+  const handleHistoryClick = (historyItem: SearchHistoryItem) => {
+    setQuery(historyItem.query);
+    setShowHistory(false);
+    handleSearch(historyItem.query);
+  };
+
+  const handleRemoveFromHistory = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    searchHistoryService.removeSearch(id);
+    const updatedHistory = searchHistoryService.getHistory('search');
+    setSearchHistory(updatedHistory);
+  };
+
+  const handleClearHistory = () => {
+    searchHistoryService.clearHistory('search');
+    setSearchHistory([]);
+    toast({
+      title: 'History Cleared',
+      description: 'Search history has been cleared.',
+      variant: 'default'
+    });
+  };
+
+  const handleInputFocus = () => {
+    if (query.length < 2 && searchHistory.length > 0) {
+      setShowHistory(true);
+    }
   };
 
   const generateFHIR = (mapping: NAMASTEMapping) => {
@@ -258,6 +319,7 @@ const Search = () => {
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                  onFocus={handleInputFocus}
                   className="pr-10"
                   disabled={loading}
                 />
@@ -273,17 +335,12 @@ const Search = () => {
             </div>
 
             {/* Suggestions Dropdown */}
-            {(showSuggestions && suggestions.length > 0) || suggestionsLoading ? (
+            {showSuggestions && suggestions.length > 0 && (
               <div
                 ref={suggestionsRef}
                 className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-glow z-50 max-h-60 overflow-y-auto"
               >
-                {suggestionsLoading ? (
-                  <div className="p-4 text-center">
-                    <LoadingSpinner size="sm" text="Searching..." />
-                  </div>
-                ) : (
-                  suggestions.map((suggestion, index) => (
+                {suggestions.map((suggestion, index) => (
                   <div
                     key={index}
                     className="p-3 hover:bg-accent cursor-pointer border-b border-border last:border-0"
@@ -307,10 +364,65 @@ const Search = () => {
                       </Badge>
                     </div>
                   </div>
-                  ))
-                )}
+                ))}
               </div>
-            ) : null}
+            )}
+
+            {/* Search History Dropdown */}
+            {showHistory && searchHistory.length > 0 && (
+              <div
+                ref={historyRef}
+                className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-glow z-50 max-h-60 overflow-y-auto"
+              >
+                <div className="flex items-center justify-between p-3 border-b border-border bg-muted/30">
+                  <div className="flex items-center gap-2">
+                    <History className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm font-medium">Recent Searches</span>
+                  </div>
+                  {searchHistory.length > 0 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleClearHistory}
+                      className="text-xs h-6 px-2"
+                    >
+                      <Trash2 className="w-3 h-3 mr-1" />
+                      Clear
+                    </Button>
+                  )}
+                </div>
+                {searchHistory.map((historyItem) => (
+                  <div
+                    key={historyItem.id}
+                    className="p-3 hover:bg-accent cursor-pointer border-b border-border last:border-0 group"
+                    onClick={() => handleHistoryClick(historyItem)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 flex-1">
+                        <Clock className="w-3 h-3 text-muted-foreground" />
+                        <div className="flex-1">
+                          <p className="font-medium text-sm">{historyItem.query}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(historyItem.timestamp).toLocaleDateString()}
+                            {historyItem.resultCount !== undefined && (
+                              <> • {historyItem.resultCount} results</>
+                            )}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => handleRemoveFromHistory(e, historyItem.id)}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0"
+                      >
+                        <X className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

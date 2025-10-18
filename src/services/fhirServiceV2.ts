@@ -9,7 +9,7 @@ import {
   AuditLogEntry, 
   ABHAUser 
 } from '@/types/fhir';
-import { dbService, MappingFilters, AuditFilters } from './database';
+import { browserDbService as dbService, MappingFilters, AuditFilters } from './browserDatabase';
 import { supabase } from '@/integrations/supabase/client';
 
 /**
@@ -49,10 +49,10 @@ class EnhancedFHIRService {
       }
       
       this.isInitialized = true;
-      console.log('Enhanced FHIR Service initialized successfully');
+      console.log('Enhanced FHIR Service initialized successfully with IndexedDB');
     } catch (error) {
       console.error('Failed to initialize FHIR Service:', error);
-      // Fall back to in-memory mode if MongoDB is not available
+      // Fall back to in-memory mode if IndexedDB is not available
       this.isInitialized = false;
     }
   }
@@ -209,13 +209,13 @@ class EnhancedFHIRService {
         await this.initialize();
       }
 
-      const searchResult = await dbService.searchMappings(query, page, pageSize);
+      const searchResult = await dbService.searchMappings(query, {}, page, pageSize);
       
       // Transform to expected format
-      const results: SearchResult[] = searchResult.results.map(result => ({
-        namaste: result.mapping,
-        highlights: result.highlights,
-        relevanceScore: result.score
+      const results: SearchResult[] = searchResult.mappings.map(mapping => ({
+        namaste: mapping,
+        highlights: [],
+        relevanceScore: mapping.confidence_score
       }));
 
       // Log the search to both MongoDB and Supabase
@@ -259,16 +259,15 @@ class EnhancedFHIRService {
       let mapping: NAMASTEMapping | null = null;
       
       if (sourceSystem === 'namaste') {
-        mapping = await dbService.getMappingById(code);
+        mapping = await dbService.getMappingByCode(code);
       } else {
         // Search by other code systems
-        const filters: MappingFilters = {};
-        const results = await dbService.getMappings(filters, 1, 1000);
+        const results = await dbService.searchMappings('', {}, 1, 1000);
         
         if (sourceSystem === 'icd11-tm2') {
-          mapping = results.data.find(m => m.icd11_tm2_code === code) || null;
+          mapping = results.mappings.find(m => m.icd11_tm2_code === code) || null;
         } else if (sourceSystem === 'icd11-biomedicine') {
-          mapping = results.data.find(m => m.icd11_biomedicine_code === code) || null;
+          mapping = results.mappings.find(m => m.icd11_biomedicine_code === code) || null;
         }
       }
 
@@ -345,10 +344,10 @@ class EnhancedFHIRService {
       chapter: filters.chapter
     };
 
-    const result = await dbService.getMappings(mappingFilters, page, pageSize);
+    const result = await dbService.searchMappings('', mappingFilters, page, pageSize);
     
     return {
-      mappings: result.data,
+      mappings: result.mappings,
       total: result.total,
       page,
       pageSize
@@ -370,7 +369,7 @@ class EnhancedFHIRService {
     const result = await dbService.getAuditLogs(auditFilters, page, pageSize);
     
     return {
-      entries: result.data,
+      entries: result.entries,
       total: result.total,
       page,
       pageSize
@@ -498,7 +497,7 @@ class EnhancedFHIRService {
     }
 
     const stats = await dbService.getMappingStats();
-    const allMappings = await dbService.getMappings({}, 1, 10000);
+    const allMappings = await dbService.searchMappings('', {}, 1, 10000);
 
     return {
       resourceType: 'CodeSystem',
@@ -516,7 +515,7 @@ class EnhancedFHIRService {
       copyright: '© 2024 Government of India. All rights reserved.',
       content: 'complete',
       count: stats.totalMappings,
-      concept: allMappings.data.map(mapping => ({
+      concept: allMappings.mappings.map(mapping => ({
         code: mapping.namaste_code,
         display: mapping.namaste_term,
         definition: `${mapping.category} term for ${mapping.chapter_name}`,
@@ -539,7 +538,7 @@ class EnhancedFHIRService {
       await this.initialize();
     }
 
-    const allMappings = await dbService.getMappings({}, 1, 10000);
+    const allMappings = await dbService.searchMappings('', {}, 1, 10000);
 
     return {
       resourceType: 'ConceptMap',
@@ -560,7 +559,7 @@ class EnhancedFHIRService {
         {
           source: 'http://terminology.gov.in/CodeSystem/namaste',
           target: 'http://id.who.int/icd/release/11/2022-02/tm2',
-          element: allMappings.data.map(mapping => ({
+          element: allMappings.mappings.map(mapping => ({
             code: mapping.namaste_code,
             display: mapping.namaste_term,
             target: [{
@@ -574,7 +573,7 @@ class EnhancedFHIRService {
         {
           source: 'http://terminology.gov.in/CodeSystem/namaste',
           target: 'http://id.who.int/icd/release/11/2022-02/biomedicine',
-          element: allMappings.data.map(mapping => ({
+          element: allMappings.mappings.map(mapping => ({
             code: mapping.namaste_code,
             display: mapping.namaste_term,
             target: [{

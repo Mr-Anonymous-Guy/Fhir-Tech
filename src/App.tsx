@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Auth from "./pages/Auth";
+import Welcome from "./pages/Welcome";
 import Dashboard from "./pages/Dashboard";
 import Search from "./pages/Search";
 import Mappings from "./pages/Mappings";
@@ -23,13 +24,14 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
+            <Route path="/" element={<Welcome />} />
             <Route path="/auth" element={<Auth />} />
-            <Route path="/" element={<Layout />}>
+            <Route path="/app" element={<Layout />}>
               <Route index element={<Dashboard />} />
-              <Route path="/search" element={<Search />} />
-              <Route path="/mappings" element={<Mappings />} />
-              <Route path="/bulk-upload" element={<BulkUpload />} />
-              <Route path="/audit" element={<AuditTrail />} />
+              <Route path="search" element={<Search />} />
+              <Route path="mappings" element={<Mappings />} />
+              <Route path="bulk-upload" element={<BulkUpload />} />
+              <Route path="audit" element={<AuditTrail />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

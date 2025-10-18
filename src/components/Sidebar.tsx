@@ -17,15 +17,15 @@ const Sidebar = () => {
   const location = useLocation();
 
   const navigation = [
-    { name: 'Dashboard', href: '/', icon: Home },
-    { name: 'Search & Map', href: '/search', icon: Search },
-    { name: 'All Mappings', href: '/mappings', icon: Database },
-    { name: 'Bulk Upload', href: '/bulk-upload', icon: Upload },
-    { name: 'Audit Trail', href: '/audit', icon: Activity }
+    { name: 'Dashboard', href: '/app', icon: Home },
+    { name: 'Search & Map', href: '/app/search', icon: Search },
+    { name: 'All Mappings', href: '/app/mappings', icon: Database },
+    { name: 'Bulk Upload', href: '/app/bulk-upload', icon: Upload },
+    { name: 'Audit Trail', href: '/app/audit', icon: Activity }
   ];
 
   const isActive = (path: string) => {
-    if (path === '/') return location.pathname === '/';
+    if (path === '/app') return location.pathname === '/app';
     return location.pathname.startsWith(path);
   };
 

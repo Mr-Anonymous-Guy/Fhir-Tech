@@ -22,7 +22,7 @@ export default function Auth() {
 
   // Redirect if already logged in
   if (user) {
-    navigate("/");
+    navigate("/app");
     return null;
   }
 
@@ -39,7 +39,7 @@ export default function Auth() {
       if (error) throw error;
 
       toast.success("Logged in successfully!");
-      navigate("/");
+      navigate("/app");
     } catch (error: any) {
       toast.error(error.message || "Failed to login");
     } finally {
@@ -59,7 +59,7 @@ export default function Auth() {
           data: {
             full_name: signupFullName,
           },
-          emailRedirectTo: `${window.location.origin}/`,
+          emailRedirectTo: `${window.location.origin}/app`,
         },
       });
 

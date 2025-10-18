@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useDemo } from '@/contexts/DemoContext';
 import { fhirService } from '@/services/fhirService';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,7 +18,8 @@ import {
   CheckCircle,
   AlertTriangle,
   BarChart3,
-  Shield
+  Shield,
+  Play
 } from 'lucide-react';
 
 interface DashboardStats {
@@ -29,6 +31,7 @@ interface DashboardStats {
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const { isDemoMode } = useDemo();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -83,7 +86,7 @@ const Dashboard = () => {
       title: 'Search & Map Terms',
       description: 'Find NAMASTE to ICD-11 mappings',
       icon: Search,
-      href: '/search',
+      href: '/app/search',
       variant: 'medical' as const,
       color: 'text-primary'
     },
@@ -91,7 +94,7 @@ const Dashboard = () => {
       title: 'Browse All Mappings',
       description: 'View complete terminology database',
       icon: Database,
-      href: '/mappings',
+      href: '/app/mappings',
       variant: 'default' as const,
       color: 'text-accent'
     },
@@ -99,7 +102,7 @@ const Dashboard = () => {
       title: 'Bulk Upload',
       description: 'Process multiple terms at once',
       icon: Upload,
-      href: '/bulk-upload',
+      href: '/app/bulk-upload',
       variant: 'success' as const,
       color: 'text-success'
     },
@@ -107,7 +110,7 @@ const Dashboard = () => {
       title: 'Audit Trail',
       description: 'Review system activity logs',
       icon: Activity,
-      href: '/audit',
+      href: '/app/audit',
       variant: 'info' as const,
       color: 'text-info'
     }
@@ -127,10 +130,17 @@ const Dashboard = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground">
-            Welcome, {user?.user_metadata?.full_name || user?.email}
+            Welcome, {isDemoMode ? 'Demo User' : (user?.user_metadata?.full_name || user?.email)}
           </h1>
           <p className="text-muted-foreground mt-2">
-            FHIR R4-compliant terminology service for traditional Indian medicine
+            {isDemoMode ? (
+              <>
+                <Play className="inline w-4 h-4 mr-1" />
+                Exploring with sample data - Create an account to save your work
+              </>
+            ) : (
+              'FHIR R4-compliant terminology service for traditional Indian medicine'
+            )}
           </p>
         </div>
       </div>

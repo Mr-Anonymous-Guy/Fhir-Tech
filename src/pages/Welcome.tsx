@@ -11,12 +11,20 @@ import {
   Globe, 
   CheckCircle,
   ArrowRight,
-  Stethoscope
+  Stethoscope,
+  Play
 } from 'lucide-react';
 import NAMASTELogo from '@/components/NAMASTELogo';
+import { useDemo } from '@/contexts/DemoContext';
 
 const Welcome = () => {
   const navigate = useNavigate();
+  const { enterDemoMode } = useDemo();
+
+  const handleTryDemo = () => {
+    enterDemoMode();
+    navigate('/app');
+  };
 
   const features = [
     {
@@ -111,10 +119,11 @@ const Welcome = () => {
             <Button 
               size="lg" 
               variant="outline"
-              onClick={() => navigate('/auth')}
+              onClick={handleTryDemo}
               className="text-lg px-8 py-6"
             >
-              Learn More
+              <Play className="w-5 h-5 mr-2" />
+              Try Demo Mode
             </Button>
           </div>
         </div>

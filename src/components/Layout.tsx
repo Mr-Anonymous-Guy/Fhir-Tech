@@ -1,11 +1,14 @@
 import { Outlet, Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useDemo } from '@/contexts/DemoContext';
 import Header from './Header';
 import Sidebar from './Sidebar';
 import LoadingSpinner from './LoadingSpinner';
+import DemoBanner from './DemoBanner';
 
 const Layout = () => {
   const { isAuthenticated, loading } = useAuth();
+  const { isDemoMode } = useDemo();
 
   if (loading) {
     return (
@@ -15,7 +18,8 @@ const Layout = () => {
     );
   }
 
-  if (!isAuthenticated) {
+  // Allow access if authenticated OR in demo mode
+  if (!isAuthenticated && !isDemoMode) {
     return <Navigate to="/auth" replace />;
   }
 
@@ -24,6 +28,7 @@ const Layout = () => {
       <Sidebar />
       <div className="flex-1 flex flex-col">
         <Header />
+        {isDemoMode && <DemoBanner />}
         <main className="flex-1 p-6">
           <Outlet />
         </main>

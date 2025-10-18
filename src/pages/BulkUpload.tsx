@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { fhirService } from '@/services/fhirService';
+import { enhancedFhirService } from '@/services/fhirServiceV2';
 import { NAMASTEMapping } from '@/types/fhir';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -149,7 +149,7 @@ const BulkUpload = () => {
 
     setProcessing(true);
     try {
-      const result = await fhirService.processBulkUpload(parsedMappings);
+      const result = await enhancedFhirService.processBulkUpload(parsedMappings);
       setDownloadUrl(result.downloadUrl);
       
       toast({

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDemo } from '@/contexts/DemoContext';
-import { fhirService } from '@/services/fhirService';
+import { enhancedFhirService } from '@/services/fhirServiceV2';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -38,8 +38,10 @@ const Dashboard = () => {
   useEffect(() => {
     const loadDashboardData = async () => {
       try {
-        const mappingsData = fhirService.getAllMappings({}, 1, 1000);
-        const auditData = fhirService.getAuditLog(1, 100);
+        const [mappingsData, auditData] = await Promise.all([
+          enhancedFhirService.getAllMappings({}, 1, 1000),
+          enhancedFhirService.getAuditLog(1, 100)
+        ]);
         
         const categoryCount: { [key: string]: number } = {};
         mappingsData.mappings.forEach(mapping => {

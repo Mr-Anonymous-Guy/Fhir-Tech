@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { fhirService } from '@/services/fhirService';
+import { enhancedFhirService } from '@/services/fhirServiceV2';
 import { NAMASTEMapping, SearchResult } from '@/types/fhir';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,7 +30,7 @@ const Search = () => {
     if (query.length >= 2) {
       const timer = setTimeout(async () => {
         try {
-          const response = await fhirService.lookup(query, 1, 5);
+          const response = await enhancedFhirService.lookup(query, 1, 5);
           setSuggestions(response.results);
           setShowSuggestions(true);
         } catch (error) {
@@ -69,7 +69,7 @@ const Search = () => {
     setLoading(true);
     setShowSuggestions(false);
     try {
-      const response = await fhirService.lookup(searchTerm);
+      const response = await enhancedFhirService.lookup(searchTerm);
       setResults(response.results);
       
       if (response.results.length === 0) {

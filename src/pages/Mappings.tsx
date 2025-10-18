@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { fhirService } from '@/services/fhirService';
+import { enhancedFhirService } from '@/services/fhirServiceV2';
 import { NAMASTEMapping } from '@/types/fhir';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,7 +38,7 @@ const Mappings = () => {
   const loadMappings = async () => {
     setLoading(true);
     try {
-      const response = fhirService.getAllMappings(filters, page, pageSize);
+      const response = await enhancedFhirService.getAllMappings(filters, page, pageSize);
       setMappings(response.mappings);
       setTotal(response.total);
     } catch (error) {
@@ -52,10 +52,14 @@ const Mappings = () => {
     }
   };
 
-  const loadMetadata = () => {
-    const metadata = fhirService.getMetadata();
-    setCategories(metadata.categories);
-    setChapters(metadata.chapters);
+  const loadMetadata = async () => {
+    try {
+      const metadata = await enhancedFhirService.getMetadata();
+      setCategories(metadata.categories);
+      setChapters(metadata.chapters);
+    } catch (error) {
+      console.error('Failed to load metadata:', error);
+    }
   };
 
   const handleSearch = () => {

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { fhirService } from '@/services/fhirService';
+import { enhancedFhirService } from '@/services/fhirServiceV2';
 import { AuditLogEntry } from '@/types/fhir';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,14 +27,10 @@ const AuditTrail = () => {
   const loadAuditLog = async () => {
     setLoading(true);
     try {
-      const response = fhirService.getAuditLog(page, pageSize);
-      let filteredEntries = response.entries;
+      const filters = { action: actionFilter !== 'all' ? actionFilter : undefined };
+      const response = await enhancedFhirService.getAuditLog(page, pageSize, filters);
       
-      if (actionFilter !== 'all') {
-        filteredEntries = response.entries.filter(entry => entry.action === actionFilter);
-      }
-      
-      setAuditEntries(filteredEntries);
+      setAuditEntries(response.entries);
       setTotal(response.total);
     } catch (error) {
       toast({

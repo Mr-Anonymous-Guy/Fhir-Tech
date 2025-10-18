@@ -6,7 +6,7 @@ const NAMASTELogo = ({ className = "text-4xl font-bold", showSubtext = true }: {
       </h1>
       {showSubtext && (
         <p className="text-sm text-muted-foreground/70 font-medium">
-          Made by CodeMorph
+          Traditional Medicine Terminology Service
         </p>
       )}
     </div>

@@ -9,7 +9,7 @@ import {
   AuditLogEntry, 
   ABHAUser 
 } from '@/types/fhir';
-import { browserDbService as dbService, MappingFilters, AuditFilters } from './browserDatabase';
+import { mongoDbApiService as dbService, MappingFilters, AuditFilters } from './mongoDbApiService';
 import { supabase } from '@/integrations/supabase/client';
 
 /**
@@ -50,12 +50,12 @@ class EnhancedFHIRService {
       }
       
       this.isInitialized = true;
-      console.log('Enhanced FHIR Service initialized successfully with IndexedDB');
+      console.log('Enhanced FHIR Service initialized successfully with MongoDB API');
     } catch (error) {
       console.error('Failed to initialize FHIR Service:', error);
-      // Try to seed data even if connection failed
-      try {
-        await this.seedInitialData();
+      // Fall back to in-memory mode if MongoDB API is not available
+      this.isInitialized = false;
+    }
         this.isInitialized = true;
         console.log('FHIR Service initialized with fallback data');
       } catch (seedError) {

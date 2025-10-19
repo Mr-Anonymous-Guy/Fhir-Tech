@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { LogOut, User, Shield, Play, Power } from 'lucide-react';
 import NAMASTELogo from '@/components/NAMASTELogo';
-import ProfileSidebar from '@/components/ProfileSidebar';
+import EnhancedProfileSidebar from '@/components/EnhancedProfileSidebar';
 
 const Header = () => {
   const { user, logout } = useAuth();
@@ -67,8 +67,8 @@ const Header = () => {
         </Button>
       </div>
       
-      {/* Animated Profile Sidebar */}
-      <ProfileSidebar 
+      {/* Enhanced Profile Sidebar */}
+      <EnhancedProfileSidebar 
         isOpen={isProfileOpen} 
         onClose={() => setIsProfileOpen(false)} 
       />

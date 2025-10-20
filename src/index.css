@@ -7,7 +7,7 @@ All colors MUST be HSL. */
 
 @layer base {
   :root {
-    /* Ministry of AYUSH Official Color Palette */
+    /* Ministry of AYUSH Official Color Palette - Light Mode */
     --primary: 211 100% 50%;         /* Bright blue #007BFF */
     --primary-foreground: 0 0% 100%;
     
@@ -56,6 +56,67 @@ All colors MUST be HSL. */
     --transition-smooth: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-bounce: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   }
+
+  .dark {
+    /* Dark Mode - Dynamic Professional Design */
+    --primary: 211 100% 65%;         /* Vibrant blue for contrast */
+    --primary-foreground: 0 0% 0%;
+    
+    --secondary: 220 15% 8%;         /* Dark blue-gray */
+    --secondary-foreground: 0 0% 90%;
+    
+    --background: 0 0% 0%;           /* Pure black base */
+    --foreground: 0 0% 96%;          /* High contrast white */
+    
+    --card: 220 15% 4%;              /* Dark cards with subtle blue tint */
+    --card-foreground: 0 0% 95%;
+    
+    --muted: 220 15% 10%;            /* Muted background with blue undertone */
+    --muted-foreground: 0 0% 65%;
+    
+    --accent: 211 100% 65%;          /* Bright accent */
+    --accent-foreground: 0 0% 0%;
+    
+    --destructive: 0 85% 65%;
+    --destructive-foreground: 0 0% 95%;
+    
+    --border: 220 15% 18%;           /* Subtle colored border */
+    --input: 220 15% 12%;
+    --ring: 211 100% 65%;
+    
+    /* Navigation Colors - Dark */
+    --nav-bg: 220 20% 3%;            /* Deep blue-black */
+    --nav-foreground: 0 0% 95%;
+    
+    /* Status Colors - Enhanced */
+    --success: 142 76% 55%;          /* Vibrant green */
+    --success-foreground: 0 0% 0%;
+    --warning: 43 96% 70%;           /* Bright amber */
+    --warning-foreground: 0 0% 0%;
+    --info: 211 100% 65%;            /* Bright info blue */
+    --info-foreground: 0 0% 0%;
+    
+    /* Professional Shadows with Color */
+    --shadow-card: 0 2px 8px 0 hsl(220, 20%, 2%, 0.4), 0 1px 3px 0 hsl(211, 100%, 50%, 0.1);
+    --shadow-elevated: 0 8px 25px -8px hsl(220, 20%, 2%, 0.6), 0 2px 8px -2px hsl(211, 100%, 50%, 0.15);
+    --shadow-lg: 0 20px 40px -12px hsl(220, 20%, 2%, 0.7), 0 8px 16px -4px hsl(211, 100%, 50%, 0.2);
+    
+    /* Dynamic Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(211, 100%, 60%) 0%, hsl(211, 100%, 70%) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(220, 15%, 4%) 0%, hsl(220, 20%, 6%) 100%);
+    --gradient-nav: linear-gradient(180deg, hsl(220, 20%, 3%) 0%, hsl(220, 25%, 2%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(211, 100%, 65%) 0%, hsl(191, 100%, 65%) 100%);
+    
+    /* Glow Effects */
+    --glow-primary: 0 0 20px hsl(211, 100%, 60%, 0.3);
+    --glow-accent: 0 0 15px hsl(191, 100%, 65%, 0.2);
+    --glow-success: 0 0 15px hsl(142, 76%, 55%, 0.2);
+    
+    /* Glass Morphism */
+    --glass-bg: rgba(255, 255, 255, 0.02);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-backdrop: blur(20px) saturate(150%);
+  }
 }
 
 @layer base {
@@ -65,5 +126,102 @@ All colors MUST be HSL. */
 
   body {
     @apply bg-background text-foreground;
+    /* Add subtle texture in dark mode */
+    background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.02) 1px, transparent 0);
+    background-size: 20px 20px;
+  }
+}
+
+@layer utilities {
+  /* Dark Mode Enhancements */
+  .dark-gradient-card {
+    background: var(--gradient-card);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: var(--glass-backdrop);
+  }
+  
+  .dark-gradient-nav {
+    background: var(--gradient-nav);
+  }
+  
+  .dark-glow-primary {
+    box-shadow: var(--glow-primary);
+  }
+  
+  .dark-glow-accent {
+    box-shadow: var(--glow-accent);
+  }
+  
+  .dark-glow-success {
+    box-shadow: var(--glow-success);
+  }
+  
+  .glass-card {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: var(--glass-backdrop);
+  }
+  
+  /* Enhanced shadows for dark mode */
+  .shadow-dark-card {
+    box-shadow: var(--shadow-card);
+  }
+  
+  .shadow-dark-elevated {
+    box-shadow: var(--shadow-elevated);
+  }
+  
+  .shadow-dark-lg {
+    box-shadow: var(--shadow-lg);
+  }
+  
+  /* Animated background patterns */
+  .animated-bg {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .animated-bg::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(
+      from 0deg at 50% 50%,
+      transparent 0deg,
+      hsl(var(--primary) / 0.05) 60deg,
+      transparent 120deg,
+      hsl(var(--accent) / 0.05) 180deg,
+      transparent 240deg,
+      hsl(var(--primary) / 0.05) 300deg,
+      transparent 360deg
+    );
+    animation: rotate 20s linear infinite;
+    z-index: -1;
+  }
+  
+  @keyframes rotate {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  /* Pulse animation for badges */
+  .pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite alternate;
+  }
+  
+  @keyframes pulse-glow {
+    from {
+      box-shadow: 0 0 5px hsl(var(--primary) / 0.2);
+    }
+    to {
+      box-shadow: 0 0 15px hsl(var(--primary) / 0.4);
+    }
   }
 }

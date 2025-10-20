@@ -5,6 +5,7 @@ import Header from './Header';
 import Sidebar from './Sidebar';
 import LoadingSpinner from './LoadingSpinner';
 import DemoBanner from './DemoBanner';
+import { PageTransition } from './PageTransition';
 
 const Layout = () => {
   const { isAuthenticated, loading } = useAuth();
@@ -29,8 +30,10 @@ const Layout = () => {
       <div className="flex-1 flex flex-col">
         <Header />
         {isDemoMode && <DemoBanner />}
-        <main className="flex-1 p-6">
-          <Outlet />
+        <main className="flex-1 p-6 relative overflow-hidden">
+          <PageTransition>
+            <Outlet />
+          </PageTransition>
         </main>
       </div>
     </div>

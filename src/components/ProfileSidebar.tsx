@@ -10,18 +10,15 @@ import { Separator } from '@/components/ui/separator';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
   User, 
-  Settings, 
   LogOut, 
   Play, 
   Power,
   Sun,
   Moon,
   Monitor,
-  Bell,
   Shield,
   Database,
   Download,
-  HelpCircle,
   ChevronRight,
   X,
   Palette
@@ -37,7 +34,6 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ isOpen, onClose }) => {
   const { isDemoMode, exitDemoMode } = useDemo();
   const { theme, setTheme, actualTheme } = useTheme();
   const navigate = useNavigate();
-  const [notifications, setNotifications] = useState(3);
   const [hoveredItem, setHoveredItem] = useState<number | null>(null);
 
   useEffect(() => {
@@ -70,43 +66,7 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ isOpen, onClose }) => {
   ];
 
   const menuItems = [
-    {
-      icon: Settings,
-      label: 'Settings',
-      description: 'Account & preferences',
-      action: () => console.log('Settings')
-    },
-    {
-      icon: Bell,
-      label: 'Notifications',
-      description: `${notifications} unread`,
-      badge: notifications,
-      action: () => console.log('Notifications')
-    },
-    {
-      icon: Shield,
-      label: 'Security',
-      description: 'Password & privacy',
-      action: () => console.log('Security')
-    },
-    {
-      icon: Database,
-      label: 'Data Management',
-      description: 'Export & sync',
-      action: () => console.log('Data Management')
-    },
-    {
-      icon: Download,
-      label: 'Downloads',
-      description: 'Generated FHIR files',
-      action: () => console.log('Downloads')
-    },
-    {
-      icon: HelpCircle,
-      label: 'Help & Support',
-      description: 'Documentation & contact',
-      action: () => console.log('Help')
-    }
+    // Removed unwanted sections: Security, Data Management, Downloads, Help & Support
   ];
 
   // Animation variants
@@ -263,17 +223,22 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ isOpen, onClose }) => {
                     transition={{ delay: 0.3, type: 'spring', stiffness: 300 }}
                   >
                     <motion.h3 
-                      className="font-semibold"
+                      className="text-lg font-bold"
                       whileHover={{ scale: 1.02 }}
                     >
-                      {isDemoMode ? 'Demo User' : (user?.user_metadata?.full_name || 'User')}
+                      {isDemoMode ? 'Demo User' : (user?.user_metadata?.username || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User')}
                     </motion.h3>
                     <motion.p 
-                      className="text-sm text-muted-foreground"
+                      className="text-sm font-medium text-primary"
                       animate={{ opacity: [0.7, 1, 0.7] }}
                       transition={{ duration: 2, repeat: Infinity }}
                     >
-                      {isDemoMode ? 'Exploring with sample data' : user?.email}
+                      {isDemoMode ? 'Exploring with sample data' : `@${user?.user_metadata?.username || user?.email?.split('@')[0] || 'user'}`}
+                    </motion.p>
+                    <motion.p 
+                      className="text-xs text-muted-foreground"
+                    >
+                      FHIR Terminology Service User
                     </motion.p>
                   </motion.div>
                 </motion.div>

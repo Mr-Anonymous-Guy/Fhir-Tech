@@ -1,0 +1,85 @@
+version: '3.8'
+
+services:
+  namaste-sync:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: namaste-sync-app
+    ports:
+      - "80:80"          # Nginx web server (accessible from any IP)
+      - "3000:3000"      # Vite preview server
+      - "27017:27017"    # MongoDB
+    volumes:
+      - mongodb_data:/data/db
+      - app_logs:/var/log
+    environment:
+      - NODE_ENV=production
+      - VITE_MONGODB_URI=mongodb://localhost:27017/namaste-sync
+      - VITE_MONGODB_DB_NAME=namaste-sync
+      - VITE_APP_ENV=production
+      - HOST=0.0.0.0     # Allow external connections
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - namaste-network
+    # Security settings for production
+    security_opt:
+      - no-new-privileges:true
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
+
+  # Optional: MongoDB as separate service (alternative to built-in MongoDB)
+  # Uncomment if you prefer to use MongoDB as a separate container
+  # mongodb:
+  #   image: mongo:6.0
+  #   container_name: namaste-sync-mongo
+  #   ports:
+  #     - "27017:27017"
+  #   volumes:
+  #     - mongodb_data:/data/db
+  #   environment:
+  #     - MONGO_INITDB_DATABASE=namaste-sync
+  #   restart: unless-stopped
+  #   networks:
+  #     - namaste-network
+
+  # Optional: MongoDB Express for database management
+  # mongo-express:
+  #   image: mongo-express:latest
+  #   container_name: namaste-sync-mongo-express
+  #   ports:
+  #     - "8081:8081"
+  #   environment:
+  #     - ME_CONFIG_MONGODB_SERVER=mongodb
+  #     - ME_CONFIG_MONGODB_PORT=27017
+  #     - ME_CONFIG_MONGODB_ADMINUSERNAME=admin
+  #     - ME_CONFIG_MONGODB_ADMINPASSWORD=admin123
+  #     - ME_CONFIG_BASICAUTH_USERNAME=admin
+  #     - ME_CONFIG_BASICAUTH_PASSWORD=admin123
+  #   depends_on:
+  #     - mongodb
+  #   networks:
+  #     - namaste-network
+
+volumes:
+  mongodb_data:
+    driver: local
+  app_logs:
+    driver: local
+
+networks:
+  namaste-network:
+    driver: bridge

@@ -22,6 +22,9 @@ import { supabase } from '@/integrations/supabase/client';
  */
 class EnhancedFHIRService {
   private isInitialized = false;
+  private useBrowserFallback = false;
+  private browserMappings: NAMASTEMapping[] = [];
+  private browserAuditLog: AuditLogEntry[] = [];
   private mockUser: ABHAUser = {
     id: 'demo-user-123',
     abhaId: '12-3456-7890-1234',
@@ -39,7 +42,7 @@ class EnhancedFHIRService {
 
   private async initialize() {
     try {
-      // Connect to IndexedDB
+      // Try to connect to MongoDB API first
       await dbService.connect();
       
       // Check if we need to seed initial data
@@ -52,16 +55,46 @@ class EnhancedFHIRService {
       this.isInitialized = true;
       console.log('Enhanced FHIR Service initialized successfully with MongoDB API');
     } catch (error) {
-      console.error('Failed to initialize FHIR Service:', error);
-      // Fall back to in-memory mode if MongoDB API is not available
-      this.isInitialized = false;
+      console.warn('MongoDB API not available, falling back to browser database:', error);
+      // Fall back to browser-based storage
+      await this.initializeBrowserFallback();
     }
-        this.isInitialized = true;
-        console.log('FHIR Service initialized with fallback data');
-      } catch (seedError) {
-        console.error('Failed to seed fallback data:', seedError);
-        this.isInitialized = false;
+  }
+
+  private async initializeBrowserFallback() {
+    try {
+      console.log('Initializing browser-based fallback storage...');
+      this.useBrowserFallback = true;
+      
+      // Load from localStorage if available
+      const storedMappings = localStorage.getItem('namaste-mappings');
+      const storedAuditLog = localStorage.getItem('namaste-audit-log');
+      
+      if (storedMappings) {
+        this.browserMappings = JSON.parse(storedMappings);
+        console.log(`Loaded ${this.browserMappings.length} mappings from localStorage`);
+      } else {
+        // Generate sample data
+        this.browserMappings = this.generateSampleMappings();
+        localStorage.setItem('namaste-mappings', JSON.stringify(this.browserMappings));
+        console.log(`Generated ${this.browserMappings.length} sample mappings`);
       }
+      
+      if (storedAuditLog) {
+        this.browserAuditLog = JSON.parse(storedAuditLog);
+        console.log(`Loaded ${this.browserAuditLog.length} audit entries from localStorage`);
+      } else {
+        // Generate sample audit log
+        this.browserAuditLog = this.generateSampleAuditLog();
+        localStorage.setItem('namaste-audit-log', JSON.stringify(this.browserAuditLog));
+        console.log(`Generated ${this.browserAuditLog.length} sample audit entries`);
+      }
+      
+      this.isInitialized = true;
+      console.log('Browser fallback initialized successfully');
+    } catch (error) {
+      console.error('Failed to initialize browser fallback:', error);
+      this.isInitialized = false;
     }
   }
 
@@ -480,6 +513,39 @@ class EnhancedFHIRService {
     ];
   }
 
+  private generateSampleAuditLog(): AuditLogEntry[] {
+    const actions = ['search', 'translate', 'encounter_upload', 'bulk_upload', 'fhir_generation'];
+    const queries = ['fever', 'diabetes', 'headache', 'cough', 'skin disorder', 'digestive issues'];
+    const userNames = ['Dr. Priya Sharma', 'Dr. Rajesh Kumar', 'Dr. Anita Singh', 'Dr. Mohammad Ali'];
+    
+    const entries: AuditLogEntry[] = [];
+    
+    // Generate entries for the last 30 days
+    for (let i = 0; i < 100; i++) {
+      const timestamp = new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000);
+      const action = actions[Math.floor(Math.random() * actions.length)];
+      const success = Math.random() > 0.1; // 90% success rate
+      
+      entries.push({
+        id: `audit-${i + 1}`,
+        timestamp: timestamp.toISOString(),
+        userId: `user-${Math.floor(Math.random() * 4) + 1}`,
+        userName: userNames[Math.floor(Math.random() * userNames.length)],
+        action,
+        query: action === 'search' ? queries[Math.floor(Math.random() * queries.length)] : undefined,
+        resource: action.includes('upload') ? 'Patient encounter data' : undefined,
+        resultCount: action === 'search' ? Math.floor(Math.random() * 50) + 1 : undefined,
+        success,
+        duration: Math.floor(Math.random() * 2000) + 100, // 100-2100ms
+        ipAddress: `192.168.1.${Math.floor(Math.random() * 255)}`,
+        userAgent: 'FHIR-Client/1.0'
+      });
+    }
+    
+    // Sort by timestamp descending (newest first)
+    return entries.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  }
+
   private async generateMockAuditLog() {
     const actions = ['search', 'translate', 'encounter_upload', 'fhir_generation'] as const;
     const queries = ['kasa', 'amlapitta', 'respiratory', 'digestive', 'skin conditions'];
@@ -520,7 +586,32 @@ class EnhancedFHIRService {
         await this.initialize();
       }
 
-      const searchResult = await dbService.searchMappings(query, {}, page, pageSize);
+      let searchResult;
+      
+      if (this.useBrowserFallback) {
+        // Use browser-based search
+        const searchTerm = query.toLowerCase();
+        const filteredMappings = this.browserMappings.filter(mapping => 
+          mapping.namaste_term.toLowerCase().includes(searchTerm) ||
+          mapping.namaste_code.toLowerCase().includes(searchTerm) ||
+          mapping.category.toLowerCase().includes(searchTerm) ||
+          mapping.chapter_name.toLowerCase().includes(searchTerm) ||
+          mapping.icd11_tm2_description.toLowerCase().includes(searchTerm)
+        );
+        
+        const total = filteredMappings.length;
+        const startIndex = (page - 1) * pageSize;
+        const endIndex = startIndex + pageSize;
+        const paginatedMappings = filteredMappings.slice(startIndex, endIndex);
+        
+        searchResult = {
+          mappings: paginatedMappings,
+          total
+        };
+      } else {
+        // Use MongoDB API
+        searchResult = await dbService.searchMappings(query, {}, page, pageSize);
+      }
       
       // Transform to expected format
       const results: SearchResult[] = searchResult.mappings.map(mapping => ({
@@ -529,7 +620,7 @@ class EnhancedFHIRService {
         relevanceScore: mapping.confidence_score
       }));
 
-      // Log the search to both MongoDB and Supabase
+      // Log the search
       await this.logAuditEntry({
         action: 'search',
         query,
@@ -650,41 +741,100 @@ class EnhancedFHIRService {
       await this.initialize();
     }
 
-    const mappingFilters: MappingFilters = {
-      category: filters.category,
-      chapter: filters.chapter
-    };
+    if (this.useBrowserFallback) {
+      // Use browser-based filtering
+      let filteredMappings = [...this.browserMappings];
+      
+      if (filters.category) {
+        filteredMappings = filteredMappings.filter(m => m.category === filters.category);
+      }
+      
+      if (filters.chapter) {
+        filteredMappings = filteredMappings.filter(m => m.chapter_name === filters.chapter);
+      }
+      
+      const total = filteredMappings.length;
+      const startIndex = (page - 1) * pageSize;
+      const endIndex = startIndex + pageSize;
+      const paginatedMappings = filteredMappings.slice(startIndex, endIndex);
+      
+      return {
+        mappings: paginatedMappings,
+        total,
+        page,
+        pageSize
+      };
+    } else {
+      // Use MongoDB API
+      const mappingFilters: MappingFilters = {
+        category: filters.category,
+        chapter: filters.chapter
+      };
 
-    const result = await dbService.searchMappings('', mappingFilters, page, pageSize);
-    
-    return {
-      mappings: result.mappings,
-      total: result.total,
-      page,
-      pageSize
-    };
+      const result = await dbService.searchMappings('', mappingFilters, page, pageSize);
+      
+      return {
+        mappings: result.mappings,
+        total: result.total,
+        page,
+        pageSize
+      };
+    }
   }
 
   /**
    * Get audit log with filters
    */
-  async getAuditLog(page = 1, pageSize = 20, filters: { action?: string } = {}) {
+  async getAuditLog(page = 1, pageSize = 20, filters: { action?: string; success?: boolean; startDate?: string } = {}) {
     if (!this.isInitialized) {
       await this.initialize();
     }
 
-    const auditFilters: AuditFilters = {
-      action: filters.action
-    };
+    if (this.useBrowserFallback) {
+      // Use browser-based filtering
+      let filteredEntries = [...this.browserAuditLog];
+      
+      if (filters.action) {
+        filteredEntries = filteredEntries.filter(e => e.action === filters.action);
+      }
+      
+      if (filters.success !== undefined) {
+        filteredEntries = filteredEntries.filter(e => e.success === filters.success);
+      }
+      
+      if (filters.startDate) {
+        const startDate = new Date(filters.startDate);
+        filteredEntries = filteredEntries.filter(e => new Date(e.timestamp) >= startDate);
+      }
+      
+      const total = filteredEntries.length;
+      const startIndex = (page - 1) * pageSize;
+      const endIndex = startIndex + pageSize;
+      const paginatedEntries = filteredEntries.slice(startIndex, endIndex);
+      
+      return {
+        entries: paginatedEntries,
+        total,
+        page,
+        pageSize
+      };
+    } else {
+      // Use MongoDB API
+      const auditFilters: AuditFilters = {
+        action: filters.action,
+        success: filters.success,
+        startDate: filters.startDate
+      };
 
-    const result = await dbService.getAuditLogs(auditFilters, page, pageSize);
-    
-    return {
-      entries: result.entries,
-      total: result.total,
-      page,
-      pageSize
-    };
+      const result = await dbService.getAuditLogs(auditFilters, page, pageSize);
+      
+      return {
+        entries: result.entries,
+        total: result.total,
+        page,
+        pageSize
+      };
+    }
   }
 
   /**
@@ -695,12 +845,21 @@ class EnhancedFHIRService {
       await this.initialize();
     }
 
-    const [categories, chapters] = await Promise.all([
-      dbService.getCategories(),
-      dbService.getChapters()
-    ]);
+    if (this.useBrowserFallback) {
+      // Extract unique categories and chapters from browser data
+      const categories = [...new Set(this.browserMappings.map(m => m.category))];
+      const chapters = [...new Set(this.browserMappings.map(m => m.chapter_name))];
+      
+      return { categories, chapters };
+    } else {
+      // Use MongoDB API
+      const [categories, chapters] = await Promise.all([
+        dbService.getCategories(),
+        dbService.getChapters()
+      ]);
 
-    return { categories, chapters };
+      return { categories, chapters };
+    }
   }
 
   /**
@@ -927,27 +1086,43 @@ class EnhancedFHIRService {
     } as AuditLogEntry;
 
     try {
-      // Log to MongoDB for local storage
-      if (this.isInitialized) {
-        await dbService.insertAuditEntry(auditEntry);
+      if (this.useBrowserFallback) {
+        // Add to browser audit log
+        this.browserAuditLog.unshift(auditEntry); // Add to beginning for newest first
+        // Keep only last 1000 entries to prevent memory issues
+        if (this.browserAuditLog.length > 1000) {
+          this.browserAuditLog = this.browserAuditLog.slice(0, 1000);
+        }
+        // Save to localStorage
+        localStorage.setItem('namaste-audit-log', JSON.stringify(this.browserAuditLog));
+      } else {
+        // Log to MongoDB for local storage
+        if (this.isInitialized) {
+          await dbService.insertAuditEntry(auditEntry);
+        }
       }
 
       // Also log to Supabase for dynamic management and analytics
-      await supabase.from('audit_logs').insert({
-        id: auditEntry.id,
-        timestamp: auditEntry.timestamp,
-        user_id: auditEntry.userId,
-        user_email: this.mockUser.email,
-        action: auditEntry.action,
-        table_name: 'mappings',
-        record_id: auditEntry.query || 'unknown',
-        new_values: {
-          query: auditEntry.query,
-          result_count: auditEntry.resultCount,
-          duration: auditEntry.duration,
-          success: auditEntry.success
-        }
-      });
+      try {
+        await supabase.from('audit_logs').insert({
+          id: auditEntry.id,
+          timestamp: auditEntry.timestamp,
+          user_id: auditEntry.userId,
+          user_email: this.mockUser.email,
+          action: auditEntry.action,
+          table_name: 'mappings',
+          record_id: auditEntry.query || 'unknown',
+          new_values: {
+            query: auditEntry.query,
+            result_count: auditEntry.resultCount,
+            duration: auditEntry.duration,
+            success: auditEntry.success
+          }
+        });
+      } catch (supabaseError) {
+        // Supabase logging is optional
+        console.warn('Failed to log to Supabase:', supabaseError);
+      }
     } catch (error) {
       console.error('Failed to log audit entry:', error);
     }

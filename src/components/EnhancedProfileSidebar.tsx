@@ -227,12 +227,7 @@ const EnhancedProfileSidebar = ({ isOpen, onClose }: EnhancedProfileSidebarProps
   const ThemeIcon = themeIcons[theme];
 
   const sections = [
-    { id: 'overview', label: 'Overview', icon: User, color: 'text-primary' },
-    { id: 'security', label: 'Security', icon: Shield, color: 'text-red-500', badge: securitySessions.length },
-    { id: 'notifications', label: 'Notifications', icon: Bell, color: 'text-blue-500', badge: unreadCount },
-    { id: 'data', label: 'Data Management', icon: Database, color: 'text-green-500' },
-    { id: 'support', label: 'Help & Support', icon: HelpCircle, color: 'text-purple-500' },
-    { id: 'downloads', label: 'Downloads', icon: Download, color: 'text-orange-500' }
+    { id: 'overview', label: 'Overview', icon: User, color: 'text-primary' }
   ];
 
   const renderOverviewSection = () => (
@@ -255,11 +250,14 @@ const EnhancedProfileSidebar = ({ isOpen, onClose }: EnhancedProfileSidebarProps
               />
             </div>
             <div>
-              <CardTitle className="text-lg">
-                {isDemoMode ? 'Demo User' : (user?.user_metadata?.full_name || user?.email)}
+              <CardTitle className="text-xl font-bold">
+                {isDemoMode ? 'Demo User' : (user?.user_metadata?.username || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User')}
               </CardTitle>
-              <CardDescription>
-                {isDemoMode ? 'Exploring with sample data' : 'FHIR Terminology Service User'}
+              <CardDescription className="text-sm">
+                {isDemoMode ? 'Exploring with sample data' : `@${user?.user_metadata?.username || user?.email?.split('@')[0] || 'user'}`}
+              </CardDescription>
+              <CardDescription className="text-xs text-muted-foreground mt-1">
+                FHIR Terminology Service User
               </CardDescription>
             </div>
           </div>
@@ -553,20 +551,7 @@ const EnhancedProfileSidebar = ({ isOpen, onClose }: EnhancedProfileSidebarProps
   );
 
   const renderActiveSection = () => {
-    switch (activeSection) {
-      case 'security':
-        return renderSecuritySection();
-      case 'notifications':
-        return renderNotificationsSection();
-      case 'data':
-        return renderDataSection();
-      case 'support':
-        return renderSupportSection();
-      case 'downloads':
-        return renderDownloadsSection();
-      default:
-        return renderOverviewSection();
-    }
+    return renderOverviewSection();
   };
 
   return (

@@ -86,20 +86,28 @@ const Dashboard = () => {
       }
     };
 
+    // Load data immediately when component mounts or refreshTrigger changes
     loadDashboardData();
+
+    // Return cleanup function that resets hasMounted when component unmounts
+    return () => {
+      // Reset hasMounted on unmount to ensure proper loading when returning to dashboard
+      hasMounted.current = false;
+    };
   }, [refreshTrigger]); // Re-run when refresh is triggered
   
-  // Effect to handle component focus/visibility
+  // Effect to handle component focus/visibility and location changes
   useEffect(() => {
+    // Force refresh when component mounts
+    setRefreshTrigger(prev => prev + 1);
+    
     const handleFocus = () => {
-      if (hasMounted.current) {
-        console.log('Dashboard: Window focused, refreshing data');
-        setRefreshTrigger(prev => prev + 1);
-      }
+      console.log('Dashboard: Window focused, refreshing data');
+      setRefreshTrigger(prev => prev + 1);
     };
 
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible' && hasMounted.current) {
+      if (document.visibilityState === 'visible') {
         console.log('Dashboard: Page became visible, refreshing data');
         setRefreshTrigger(prev => prev + 1);
       }

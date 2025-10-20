@@ -122,16 +122,21 @@ const childVariants = {
 
 export const PageTransition: React.FC<PageTransitionProps> = ({ children }) => {
   const location = useLocation();
-
+  
+  // Force complete remount of children when location changes
   return (
     <AnimatePresence mode="wait" initial={false}>
       <motion.div
-        key={location.pathname}
+        key={location.pathname + location.search}
         initial="initial"
         animate="animate"
         exit="exit"
         variants={unwrapVariants}
         className="min-h-full"
+        onAnimationComplete={() => {
+          // Force browser to recalculate layout after animation completes
+          window.dispatchEvent(new Event('resize'));
+        }}
       >
         <motion.div
           variants={containerVariants}

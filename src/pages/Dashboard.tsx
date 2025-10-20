@@ -39,15 +39,17 @@ const Dashboard = () => {
   const [hoveredAction, setHoveredAction] = useState<number | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const hasMounted = useRef(false);
+  const mountCountRef = useRef(0);
 
   useEffect(() => {
+    // Force data reload on every render cycle
     const loadDashboardData = async () => {
       // Always set loading to true when this effect runs
       setLoading(true);
       setStats(null); // Clear previous stats
       
       try {
-        console.log('Dashboard: Loading data...');
+        console.log('Dashboard: Loading data...', new Date().toISOString());
         const [mappingsData, auditData] = await Promise.all([
           enhancedFhirService.getAllMappings({}, 1, 1000),
           enhancedFhirService.getAuditLog(1, 100)
@@ -86,37 +88,51 @@ const Dashboard = () => {
       }
     };
 
-    // Load data immediately when component mounts or refreshTrigger changes
+    // Always load data when this effect runs, regardless of hasMounted state
     loadDashboardData();
 
     // Return cleanup function that resets hasMounted when component unmounts
     return () => {
-      // Reset hasMounted on unmount to ensure proper loading when returning to dashboard
+      console.log('Dashboard: Component unmounting, resetting hasMounted');
       hasMounted.current = false;
     };
   }, [refreshTrigger]); // Re-run when refresh is triggered
   
-  // Effect to handle component focus/visibility and location changes
+  // Effect to handle component mount/unmount and force data refresh
   useEffect(() => {
-    // Force refresh when component mounts
-    setRefreshTrigger(prev => prev + 1);
+    console.log('Dashboard: Component mounted, count:', mountCountRef.current += 1);
     
-    const handleFocus = () => {
-      console.log('Dashboard: Window focused, refreshing data');
-      setRefreshTrigger(prev => prev + 1);
+    // ALWAYS force a refresh on mount - this is critical for navigation
+    setRefreshTrigger(Date.now());
+    
+    // Set up a navigation event listener to detect when user returns to this page
+    const handleRouteChange = () => {
+      console.log('Dashboard: Route changed, forcing refresh');
+      setRefreshTrigger(Date.now());
     };
-
+    
+    // Listen for focus and visibility changes
+    const handleFocus = () => {
+      console.log('Dashboard: Window focused');
+      setRefreshTrigger(Date.now());
+    };
+    
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        console.log('Dashboard: Page became visible, refreshing data');
-        setRefreshTrigger(prev => prev + 1);
+        console.log('Dashboard: Page visible');
+        setRefreshTrigger(Date.now());
       }
     };
-
+    
+    window.addEventListener('popstate', handleRouteChange);
     window.addEventListener('focus', handleFocus);
     document.addEventListener('visibilitychange', handleVisibilityChange);
     
     return () => {
+      console.log('Dashboard: Component unmounting');
+      // Reset all state on unmount
+      hasMounted.current = false;
+      window.removeEventListener('popstate', handleRouteChange);
       window.removeEventListener('focus', handleFocus);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };

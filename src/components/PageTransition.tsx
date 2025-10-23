@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
 import { ReactNode } from 'react';
 
@@ -6,44 +6,37 @@ interface PageTransitionProps {
   children: ReactNode;
 }
 
-const pageVariants = {
+/* ─────────────────────────────
+   FADE VARIANTS
+────────────────────────────── */
+const fadeVariants: Variants = {
   initial: {
     opacity: 0,
-    scale: 0.95,
-    y: 20,
-    rotateX: -10,
-    transformOrigin: 'center top'
   },
-  in: {
+  animate: {
     opacity: 1,
-    scale: 1,
-    y: 0,
-    rotateX: 0,
-    transformOrigin: 'center top'
+    transition: {
+      duration: 0.4,
+      ease: 'easeInOut',
+    },
   },
-  out: {
+  exit: {
     opacity: 0,
-    scale: 1.05,
-    y: -20,
-    rotateX: 10,
-    transformOrigin: 'center bottom'
-  }
+    transition: {
+      duration: 0.4,
+      ease: 'easeInOut',
+    },
+  },
 };
 
-const pageTransition = {
-  type: 'spring',
-  stiffness: 300,
-  damping: 30,
-  mass: 0.8,
-  duration: 0.6
-};
-
-// Unwrapping animation variants
-const unwrapVariants = {
+/* ─────────────────────────────
+   UNWRAP VARIANTS (for fancy page entry)
+────────────────────────────── */
+const unwrapVariants: Variants = {
   initial: {
     opacity: 0,
     clipPath: 'polygon(0 0, 0 0, 0 100%, 0 100%)',
-    scale: 0.98
+    scale: 0.98,
   },
   animate: {
     opacity: 1,
@@ -54,17 +47,17 @@ const unwrapVariants = {
       ease: [0.25, 0.1, 0.25, 1],
       clipPath: {
         duration: 0.6,
-        ease: [0.25, 0.1, 0.25, 1]
+        ease: [0.25, 0.1, 0.25, 1],
       },
       opacity: {
         duration: 0.3,
-        delay: 0.1
+        delay: 0.1,
       },
       scale: {
         duration: 0.4,
-        delay: 0.2
-      }
-    }
+        delay: 0.2,
+      },
+    },
   },
   exit: {
     opacity: 0,
@@ -72,33 +65,38 @@ const unwrapVariants = {
     scale: 1.02,
     transition: {
       duration: 0.5,
-      ease: [0.25, 0.1, 0.25, 1]
-    }
-  }
+      ease: [0.25, 0.1, 0.25, 1],
+    },
+  },
 };
 
-// Staggered children animation
-const containerVariants = {
+/* ─────────────────────────────
+   STAGGERED CONTAINER
+────────────────────────────── */
+const containerVariants: Variants = {
   initial: {},
   animate: {
     transition: {
       staggerChildren: 0.1,
-      delayChildren: 0.3
-    }
+      delayChildren: 0.3,
+    },
   },
   exit: {
     transition: {
       staggerChildren: 0.05,
-      staggerDirection: -1
-    }
-  }
+      staggerDirection: -1,
+    },
+  },
 };
 
-const childVariants = {
+/* ─────────────────────────────
+   CHILD ELEMENT VARIANTS
+────────────────────────────── */
+const childVariants: Variants = {
   initial: {
     opacity: 0,
     y: 30,
-    scale: 0.95
+    scale: 0.95,
   },
   animate: {
     opacity: 1,
@@ -107,78 +105,69 @@ const childVariants = {
     transition: {
       type: 'spring',
       stiffness: 400,
-      damping: 25
-    }
+      damping: 25,
+    },
   },
   exit: {
     opacity: 0,
     y: -20,
     scale: 1.05,
     transition: {
-      duration: 0.2
-    }
-  }
+      duration: 0.2,
+    },
+  },
 };
 
+/* ─────────────────────────────
+   PAGE TRANSITION WRAPPER
+────────────────────────────── */
 export const PageTransition: React.FC<PageTransitionProps> = ({ children }) => {
   const location = useLocation();
-  
-  // Force complete remount of children when location changes
+
   return (
     <AnimatePresence mode="wait" initial={false}>
       <motion.div
-        key={location.pathname + location.search}
+        key={location.pathname}
         initial="initial"
         animate="animate"
         exit="exit"
-        variants={unwrapVariants}
-        className="min-h-full"
-        onAnimationComplete={() => {
-          // Force browser to recalculate layout after animation completes
-          window.dispatchEvent(new Event('resize'));
-        }}
+        variants={fadeVariants}
+        className="min-h-full overflow-hidden"
       >
-        <motion.div
-          variants={containerVariants}
-          initial="initial"
-          animate="animate"
-          exit="exit"
-          className="h-full"
-        >
-          {children}
-        </motion.div>
+        <motion.div variants={containerVariants}>{children}</motion.div>
       </motion.div>
     </AnimatePresence>
   );
 };
 
-// Higher-order component for individual page elements
-export const AnimatedSection: React.FC<{ children: ReactNode; className?: string }> = ({ 
-  children, 
-  className = '' 
+/* ─────────────────────────────
+   ANIMATED SECTION
+────────────────────────────── */
+export const AnimatedSection: React.FC<{ children: ReactNode; className?: string }> = ({
+  children,
+  className = '',
 }) => {
   return (
-    <motion.div
-      variants={childVariants}
-      className={className}
-    >
+    <motion.div variants={childVariants} className={className}>
       {children}
     </motion.div>
   );
 };
 
-// Special animation for cards and dashboard elements
-export const AnimatedCard: React.FC<{ 
-  children: ReactNode; 
+/* ─────────────────────────────
+   ANIMATED CARD (for dashboard)
+────────────────────────────── */
+export const AnimatedCard: React.FC<{
+  children: ReactNode;
   className?: string;
   delay?: number;
 }> = ({ children, className = '', delay = 0 }) => {
-  const cardVariants = {
+  const cardVariants: Variants = {
     initial: {
       opacity: 0,
       scale: 0.9,
       rotateY: -10,
-      z: -50
+      z: -50,
     },
     animate: {
       opacity: 1,
@@ -190,8 +179,8 @@ export const AnimatedCard: React.FC<{
         stiffness: 300,
         damping: 20,
         delay: delay,
-        duration: 0.6
-      }
+        duration: 0.6,
+      },
     },
     exit: {
       opacity: 0,
@@ -199,8 +188,8 @@ export const AnimatedCard: React.FC<{
       rotateY: 10,
       z: -25,
       transition: {
-        duration: 0.3
-      }
+        duration: 0.3,
+      },
     },
     hover: {
       scale: 1.02,
@@ -211,15 +200,16 @@ export const AnimatedCard: React.FC<{
       transition: {
         type: 'spring',
         stiffness: 400,
-        damping: 25
-      }
-    }
+        damping: 25,
+      },
+    },
   };
 
   return (
     <motion.div
       variants={cardVariants}
       whileHover="hover"
+      whileTap={{ scale: 0.98 }}
       className={className}
     >
       {children}
@@ -227,22 +217,24 @@ export const AnimatedCard: React.FC<{
   );
 };
 
-// Floating animation for dashboard tags/badges
-export const FloatingBadge: React.FC<{ 
-  children: ReactNode; 
+/* ─────────────────────────────
+   FLOATING BADGE
+────────────────────────────── */
+export const FloatingBadge: React.FC<{
+  children: ReactNode;
   className?: string;
   delay?: number;
 }> = ({ children, className = '', delay = 0 }) => {
-  const floatingVariants = {
+  const floatingVariants: Variants = {
     animate: {
       y: [0, -5, 0],
       transition: {
         duration: 3,
         repeat: Infinity,
         ease: 'easeInOut',
-        delay: delay
-      }
-    }
+        delay: delay,
+      },
+    },
   };
 
   return (
@@ -252,7 +244,7 @@ export const FloatingBadge: React.FC<{
       className={className}
       whileHover={{
         scale: 1.05,
-        transition: { duration: 0.2 }
+        transition: { duration: 0.2 },
       }}
     >
       {children}

@@ -1,13 +1,13 @@
-import { 
-  NAMASTEMapping, 
-  FHIRCodeSystem, 
-  FHIRConceptMap, 
-  FHIRBundle, 
-  SearchResult, 
-  LookupResponse, 
-  TranslationResponse, 
-  AuditLogEntry, 
-  ABHAUser 
+import {
+  NAMASTEMapping,
+  FHIRCodeSystem,
+  FHIRConceptMap,
+  FHIRBundle,
+  SearchResult,
+  LookupResponse,
+  TranslationResponse,
+  AuditLogEntry,
+  ABHAUser
 } from '@/types/fhir';
 import { mongoDbApiService as dbService, MappingFilters, AuditFilters } from './mongoDbApiService';
 import { supabase } from '@/integrations/supabase/client';
@@ -44,14 +44,14 @@ class EnhancedFHIRService {
     try {
       // Try to connect to MongoDB API first
       await dbService.connect();
-      
+
       // Check if we need to seed initial data
       const stats = await dbService.getMappingStats();
       if (stats.totalMappings === 0) {
         console.log('No existing data found, seeding initial data...');
         await this.seedInitialData();
       }
-      
+
       this.isInitialized = true;
       console.log('Enhanced FHIR Service initialized successfully with MongoDB API');
     } catch (error) {
@@ -101,7 +101,7 @@ class EnhancedFHIRService {
   private async seedInitialData() {
     try {
       console.log('Seeding initial mapping data...');
-      
+
       // Try to load from CSV first
       const response = await fetch('/data/ayush_icd11_mappings_200.csv');
       if (response.ok) {
@@ -115,7 +115,7 @@ class EnhancedFHIRService {
         await dbService.insertMappings(sampleMappings);
         console.log(`Seeded ${sampleMappings.length} sample mappings`);
       }
-      
+
       // Generate initial audit entries
       await this.generateMockAuditLog();
     } catch (error) {
@@ -128,15 +128,15 @@ class EnhancedFHIRService {
     return lines
       .filter(line => line.trim())
       .map(line => {
-        const [namaste_code, namaste_term, icd11_tm2_code, icd11_biomedicine_code, description] = 
+        const [namaste_code, namaste_term, icd11_tm2_code, icd11_biomedicine_code, description] =
           line.split(',').map(field => field.trim().replace(/"/g, ''));
-        
+
         // Extract category from code prefix
         let category: 'Ayurveda' | 'Siddha' | 'Unani' = 'Ayurveda';
         if (namaste_code.startsWith('AYU-')) category = 'Ayurveda';
         else if (namaste_code.startsWith('SID-')) category = 'Siddha';
         else if (namaste_code.startsWith('UNA-')) category = 'Unani';
-        
+
         // Generate chapter name from traditional term
         let chapter_name = 'General Medicine';
         const term = namaste_term.toLowerCase();
@@ -151,7 +151,7 @@ class EnhancedFHIRService {
         } else if (term.includes('diabetes') || term.includes('metabolic')) {
           chapter_name = 'Endocrine and Metabolic Disorders';
         }
-        
+
         return {
           namaste_code,
           namaste_term,
@@ -198,7 +198,7 @@ class EnhancedFHIRService {
         icd11_biomedicine_code: 'BB500',
         confidence_score: 0.89
       },
-      
+
       // Ayurveda - Digestive System
       {
         namaste_code: 'AYU-004',
@@ -240,7 +240,7 @@ class EnhancedFHIRService {
         icd11_biomedicine_code: 'BB772',
         confidence_score: 0.96
       },
-      
+
       // Ayurveda - Endocrine and Metabolic
       {
         namaste_code: 'AYU-008',
@@ -272,7 +272,7 @@ class EnhancedFHIRService {
         icd11_biomedicine_code: 'BC125',
         confidence_score: 0.89
       },
-      
+
       // Ayurveda - Musculoskeletal
       {
         namaste_code: 'AYU-011',
@@ -304,7 +304,7 @@ class EnhancedFHIRService {
         icd11_biomedicine_code: 'BD458',
         confidence_score: 0.92
       },
-      
+
       // Ayurveda - Skin Disorders
       {
         namaste_code: 'AYU-014',
@@ -336,7 +336,7 @@ class EnhancedFHIRService {
         icd11_biomedicine_code: 'BE791',
         confidence_score: 0.93
       },
-      
+
       // Siddha System
       {
         namaste_code: 'SID-001',
@@ -408,7 +408,7 @@ class EnhancedFHIRService {
         icd11_biomedicine_code: 'BB127',
         confidence_score: 0.91
       },
-      
+
       // Unani System
       {
         namaste_code: 'UNA-001',
@@ -549,7 +549,7 @@ class EnhancedFHIRService {
   private async generateMockAuditLog() {
     const actions = ['search', 'translate', 'encounter_upload', 'fhir_generation'] as const;
     const queries = ['kasa', 'amlapitta', 'respiratory', 'digestive', 'skin conditions'];
-    
+
     const entries: AuditLogEntry[] = [];
     for (let i = 0; i < 50; i++) {
       const timestamp = new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString();
@@ -580,7 +580,7 @@ class EnhancedFHIRService {
    */
   async lookup(query: string, page = 1, pageSize = 10): Promise<LookupResponse> {
     const startTime = Date.now();
-    
+
     try {
       if (!this.isInitialized) {
         await this.initialize();
@@ -612,7 +612,6 @@ class EnhancedFHIRService {
         // Use MongoDB API
         searchResult = await dbService.searchMappings(query, {}, page, pageSize);
       }
-      
       // Transform to expected format
       const results: SearchResult[] = searchResult.mappings.map(mapping => ({
         namaste: mapping,
@@ -652,20 +651,20 @@ class EnhancedFHIRService {
    */
   async translate(code: string, sourceSystem: string, targetSystem: string): Promise<TranslationResponse> {
     const startTime = Date.now();
-    
+
     try {
       if (!this.isInitialized) {
         await this.initialize();
       }
 
       let mapping: NAMASTEMapping | null = null;
-      
+
       if (sourceSystem === 'namaste') {
         mapping = await dbService.getMappingByCode(code);
       } else {
         // Search by other code systems
         const results = await dbService.searchMappings('', {}, 1, 1000);
-        
+
         if (sourceSystem === 'icd11-tm2') {
           mapping = results.mappings.find(m => m.icd11_tm2_code === code) || null;
         } else if (sourceSystem === 'icd11-biomedicine') {
@@ -678,7 +677,7 @@ class EnhancedFHIRService {
       }
 
       const translations = [];
-      
+
       if (targetSystem === 'namaste' && sourceSystem !== 'namaste') {
         translations.push({
           targetCode: mapping.namaste_code,
@@ -688,7 +687,7 @@ class EnhancedFHIRService {
           confidence: mapping.confidence_score
         });
       }
-      
+
       if (targetSystem === 'icd11-tm2' && sourceSystem !== 'icd11-tm2') {
         translations.push({
           targetCode: mapping.icd11_tm2_code,
@@ -698,7 +697,7 @@ class EnhancedFHIRService {
           confidence: mapping.confidence_score
         });
       }
-      
+
       if (targetSystem === 'icd11-biomedicine' && sourceSystem !== 'icd11-biomedicine') {
         translations.push({
           targetCode: mapping.icd11_biomedicine_code,
@@ -867,7 +866,7 @@ class EnhancedFHIRService {
    */
   async processBulkUpload(mappings: NAMASTEMapping[]): Promise<{ bundle: FHIRBundle; downloadUrl: string }> {
     const startTime = Date.now();
-    
+
     try {
       if (!this.isInitialized) {
         await this.initialize();

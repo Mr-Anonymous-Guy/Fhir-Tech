@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDemo } from '@/contexts/DemoContext';
 import { enhancedFhirService } from '@/services/fhirServiceV2';
@@ -34,19 +34,16 @@ interface DashboardStats {
 const Dashboard = () => {
   const { user } = useAuth();
   const { isDemoMode } = useDemo();
+  const location = useLocation();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [hoveredAction, setHoveredAction] = useState<number | null>(null);
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
-  const hasMounted = useRef(false);
-  const mountCountRef = useRef(0);
+  const [refreshKey, setRefreshKey] = useState(0);
 
+  // Load data when component mounts OR when location changes (navigation)
   useEffect(() => {
-    // Force data reload on every render cycle
     const loadDashboardData = async () => {
-      // Always set loading to true when this effect runs
       setLoading(true);
-      setStats(null); // Clear previous stats
       
       try {
         console.log('Dashboard: Loading data...', new Date().toISOString());
@@ -84,59 +81,23 @@ const Dashboard = () => {
         });
       } finally {
         setLoading(false);
-        hasMounted.current = true;
       }
     };
 
-    // Always load data when this effect runs, regardless of hasMounted state
     loadDashboardData();
+  }, [location.pathname, refreshKey]); // Re-run when navigation occurs or refresh is triggered
 
-    // Return cleanup function that resets hasMounted when component unmounts
-    return () => {
-      console.log('Dashboard: Component unmounting, resetting hasMounted');
-      hasMounted.current = false;
-    };
-  }, [refreshTrigger]); // Re-run when refresh is triggered
-  
-  // Effect to handle component mount/unmount and force data refresh
-  useEffect(() => {
-    console.log('Dashboard: Component mounted, count:', mountCountRef.current += 1);
-    
-    // ALWAYS force a refresh on mount - this is critical for navigation
-    setRefreshTrigger(Date.now());
-    
-    // Set up a navigation event listener to detect when user returns to this page
-    const handleRouteChange = () => {
-      console.log('Dashboard: Route changed, forcing refresh');
-      setRefreshTrigger(Date.now());
-    };
-    
-    // Listen for focus and visibility changes
-    const handleFocus = () => {
-      console.log('Dashboard: Window focused');
-      setRefreshTrigger(Date.now());
-    };
-    
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        console.log('Dashboard: Page visible');
-        setRefreshTrigger(Date.now());
-      }
-    };
-    
-    window.addEventListener('popstate', handleRouteChange);
-    window.addEventListener('focus', handleFocus);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    
-    return () => {
-      console.log('Dashboard: Component unmounting');
-      // Reset all state on unmount
-      hasMounted.current = false;
-      window.removeEventListener('popstate', handleRouteChange);
-      window.removeEventListener('focus', handleFocus);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, []);
+  const handleRefresh = async () => {
+    setLoading(true);
+    try {
+      await enhancedFhirService.forceRefresh();
+      setRefreshKey(prev => prev + 1);
+    } catch (error) {
+      console.error('Failed to refresh data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -191,7 +152,7 @@ const Dashboard = () => {
 
   return (
     <motion.div 
-key="dashboard-main" // Stable key
+      key="dashboard-main"
       className="space-y-6 animated-bg"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -234,6 +195,26 @@ key="dashboard-main" // Stable key
               'FHIR R4-compliant terminology service for traditional Indian medicine'
             )}
           </motion.p>
+        </motion.div>
+        <motion.div
+          initial={{ x: 50, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ delay: 0.3, duration: 0.6 }}
+        >
+          <Button 
+            onClick={handleRefresh}
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2"
+          >
+            <motion.div
+              animate={{ rotate: [0, 360] }}
+              transition={{ duration: 1, ease: "easeInOut" }}
+            >
+              <Activity className="w-4 h-4" />
+            </motion.div>
+            Refresh Data
+          </Button>
         </motion.div>
       </AnimatedSection>
 

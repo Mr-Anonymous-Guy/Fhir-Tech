@@ -1128,6 +1128,15 @@ class EnhancedFHIRService {
   }
 
   /**
+   * Force refresh all data
+   */
+  async forceRefresh() {
+    console.log('Force refreshing FHIR service data...');
+    this.isInitialized = false;
+    await this.initialize();
+  }
+
+  /**
    * Cleanup resources
    */
   async cleanup() {

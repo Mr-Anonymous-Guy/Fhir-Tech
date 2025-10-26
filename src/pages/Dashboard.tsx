@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDemo } from '@/contexts/DemoContext';
 import { enhancedFhirService } from '@/services/fhirServiceV2';
@@ -145,13 +146,40 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-6">
-      {/* Welcome Section */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">
+      {/* Welcome Section with Animations */}
+      <motion.div 
+        className="flex items-center justify-between"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+        >
+          <motion.h1 
+            className="text-3xl font-bold text-foreground"
+            animate={{
+              backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
+            }}
+            style={{
+              background: "linear-gradient(90deg, hsl(var(--foreground)), hsl(var(--primary)), hsl(var(--foreground)))",
+              backgroundSize: "200% auto",
+              WebkitBackgroundClip: "text",
+              backgroundClip: "text",
+              WebkitTextFillColor: "transparent"
+            }}
+            transition={{ duration: 3, repeat: Infinity }}
+          >
             Welcome, {isDemoMode ? 'Demo User' : (user?.user_metadata?.full_name || user?.email)}
-          </h1>
-          <p className="text-muted-foreground mt-2">
+          </motion.h1>
+          <motion.p 
+            className="text-muted-foreground mt-2"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
             {isDemoMode ? (
               <>
                 <Play className="inline w-4 h-4 mr-1" />
@@ -160,184 +188,338 @@ const Dashboard = () => {
             ) : (
               'FHIR R4-compliant terminology service for traditional Indian medicine'
             )}
-          </p>
-        </div>
-        <div>
-          <Button 
-            onClick={handleRefresh}
-            variant="outline"
-            size="sm"
-            className="flex items-center gap-2"
+          </motion.p>
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+        >
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
-            <RefreshCw className="w-4 h-4" />
-            Refresh Data
-          </Button>
-        </div>
-      </div>
+            <Button 
+              onClick={handleRefresh}
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Refresh Data
+            </Button>
+          </motion.div>
+        </motion.div>
+      </motion.div>
 
-      {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Mappings</CardTitle>
-            <Database className="h-4 w-4 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-primary">
-              {stats?.totalMappings || 0}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              NAMASTE ⟷ ICD-11 mappings
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Recent Searches</CardTitle>
-            <TrendingUp className="h-4 w-4 text-green-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-500">
-              {stats?.recentSearches || 0}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Last 24 hours
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">System Status</CardTitle>
-            {getStatusIcon(stats?.systemStatus || 'healthy')}
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-500">
-              Healthy
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              All services operational
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active User</CardTitle>
-            <Users className="h-4 w-4 text-blue-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-500">
-              Live
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {user?.email}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Category Distribution */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="w-5 h-5 text-primary" />
-            Category Distribution
-          </CardTitle>
-          <CardDescription>
-            Distribution of mappings across traditional medicine systems
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {stats && Object.entries(stats.categories).map(([category, count]) => {
-            const percentage = (count / stats.totalMappings) * 100;
-            return (
-              <div key={category} className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="font-medium">{category}</span>
-                  <span className="text-muted-foreground">
-                    {count} mappings
-                  </span>
-                </div>
-                <Progress value={percentage} className="h-2" />
-              </div>
-            );
-          })}
-        </CardContent>
-      </Card>
-
-      {/* Quick Actions */}
-      <div>
-        <h2 className="text-2xl font-bold text-foreground mb-4">Quick Actions</h2>
-        <p className="text-muted-foreground mb-6">
-          Access all NAMASTE-SYNC features from here
-        </p>
-
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {quickActions.map((action) => (
-            <Card key={action.title} className="p-6">
-              <div className="mb-4">
-                <div className="w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <action.icon className="w-8 h-8 text-primary" />
-                </div>
-              </div>
-              
-              <h4 className="text-xl font-semibold text-foreground mb-2">
-                {action.title}
-              </h4>
-              <p className="text-muted-foreground text-sm leading-relaxed mb-4">
-                {action.description}
+      {/* Statistics Cards with Animations */}
+      <motion.div 
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.3 }}
+      >
+        <motion.div
+          whileHover={{ y: -5, transition: { duration: 0.2 } }}
+        >
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Mappings</CardTitle>
+              <Database className="h-4 w-4 text-primary" />
+            </CardHeader>
+            <CardContent>
+              <motion.div 
+                className="text-2xl font-bold text-primary"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ 
+                  type: "spring", 
+                  stiffness: 260, 
+                  damping: 20,
+                  delay: 0.5
+                }}
+              >
+                {stats?.totalMappings || 0}
+              </motion.div>
+              <p className="text-xs text-muted-foreground mt-1">
+                NAMASTE ⟷ ICD-11 mappings
               </p>
-              
-              <Button asChild variant={action.variant} className="w-full">
-                <Link to={action.href}>
-                  Get Started
-                </Link>
-              </Button>
-            </Card>
-          ))}
-        </div>
-      </div>
+            </CardContent>
+          </Card>
+        </motion.div>
 
-      {/* System Information */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Shield className="w-5 h-5 text-primary" />
-            System Information
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
-          <div>
-            <h4 className="font-semibold text-primary mb-2">Standards Compliance</h4>
-            <ul className="space-y-1 text-muted-foreground">
-              <li>• FHIR R4 Specification</li>
-              <li>• India EHR Standards 2016</li>
-              <li>• ICD-11 TM2 + Biomedicine</li>
-              <li>• NAMASTE Terminology</li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-semibold text-primary mb-2">Supported Systems</h4>
-            <ul className="space-y-1 text-muted-foreground">
-              <li>• Ayurveda Medicine</li>
-              <li>• Siddha Medicine</li>
-              <li>• Unani Medicine</li>
-              <li>• Modern Biomedicine</li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-semibold text-primary mb-2">Features</h4>
-            <ul className="space-y-1 text-muted-foreground">
-              <li>• Dual Coding Support</li>
-              <li>• FHIR Bundle Generation</li>
-              <li>• Bulk Processing</li>
-              <li>• Audit Logging</li>
-            </ul>
-          </div>
-        </CardContent>
-      </Card>
+        <motion.div
+          whileHover={{ y: -5, transition: { duration: 0.2 } }}
+        >
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Recent Searches</CardTitle>
+              <TrendingUp className="h-4 w-4 text-green-500" />
+            </CardHeader>
+            <CardContent>
+              <motion.div 
+                className="text-2xl font-bold text-green-500"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ 
+                  type: "spring", 
+                  stiffness: 260, 
+                  damping: 20,
+                  delay: 0.6
+                }}
+              >
+                {stats?.recentSearches || 0}
+              </motion.div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Last 24 hours
+              </p>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <motion.div
+          whileHover={{ y: -5, transition: { duration: 0.2 } }}
+        >
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">System Status</CardTitle>
+              {getStatusIcon(stats?.systemStatus || 'healthy')}
+            </CardHeader>
+            <CardContent>
+              <motion.div 
+                className="text-2xl font-bold text-green-500"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ 
+                  type: "spring", 
+                  stiffness: 260, 
+                  damping: 20,
+                  delay: 0.7
+                }}
+              >
+                Healthy
+              </motion.div>
+              <p className="text-xs text-muted-foreground mt-1">
+                All services operational
+              </p>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <motion.div
+          whileHover={{ y: -5, transition: { duration: 0.2 } }}
+        >
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Active User</CardTitle>
+              <Users className="h-4 w-4 text-blue-500" />
+            </CardHeader>
+            <CardContent>
+              <motion.div 
+                className="text-2xl font-bold text-blue-500"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ 
+                  type: "spring", 
+                  stiffness: 260, 
+                  damping: 20,
+                  delay: 0.8
+                }}
+              >
+                Live
+              </motion.div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {user?.email}
+              </p>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </motion.div>
+
+      {/* Category Distribution with Animations */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.4 }}
+      >
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="w-5 h-5 text-primary" />
+              Category Distribution
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {stats && Object.entries(stats.categories).map(([category, count], index) => {
+              const percentage = (count / stats.totalMappings) * 100;
+              return (
+                <motion.div 
+                  key={category} 
+                  className="space-y-2"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: 0.5 + index * 0.1 }}
+                >
+                  <div className="flex justify-between text-sm">
+                    <span className="font-medium">{category}</span>
+                    <span className="text-muted-foreground">
+                      {count} mappings
+                    </span>
+                  </div>
+                  <Progress value={percentage} className="h-2" />
+                </motion.div>
+              );
+            })}
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Quick Actions with Animations */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.5 }}
+      >
+        <motion.h2 
+          className="text-2xl font-bold text-foreground mb-4"
+          animate={{
+            backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
+          }}
+          style={{
+            background: "linear-gradient(90deg, hsl(var(--foreground)), hsl(var(--primary)), hsl(var(--foreground)))",
+            backgroundSize: "200% auto",
+            WebkitBackgroundClip: "text",
+            backgroundClip: "text",
+            WebkitTextFillColor: "transparent"
+          }}
+          transition={{ duration: 3, repeat: Infinity, delay: 0.6 }}
+        >
+          Quick Actions
+        </motion.h2>
+        <motion.p 
+          className="text-muted-foreground mb-6"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.7 }}
+        >
+          Access all NAMASTE-SYNC features from here
+        </motion.p>
+
+        <motion.div 
+          className="grid md:grid-cols-2 lg:grid-cols-4 gap-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.8 }}
+        >
+          {quickActions.map((action, index) => (
+            <motion.div
+              key={action.title}
+              whileHover={{ 
+                y: -10,
+                scale: 1.03,
+                transition: { type: "spring", stiffness: 300 }
+              }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.9 + index * 0.1 }}
+            >
+              <Card className="p-6">
+                <motion.div 
+                  className="mb-4"
+                  whileHover={{ 
+                    scale: 1.1,
+                    transition: { duration: 0.2 }
+                  }}
+                >
+                  <div className="w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <action.icon className="w-8 h-8 text-primary" />
+                  </div>
+                </motion.div>
+                
+                <motion.h4 
+                  className="text-xl font-semibold text-foreground mb-2"
+                  whileHover={{ 
+                    x: 5,
+                    transition: { duration: 0.2 }
+                  }}
+                >
+                  {action.title}
+                </motion.h4>
+                <motion.p 
+                  className="text-muted-foreground text-sm leading-relaxed mb-4"
+                  animate={{ opacity: [0.7, 1, 0.7] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  {action.description}
+                </motion.p>
+                
+                <Button asChild variant={action.variant} className="w-full">
+                  <Link to={action.href}>
+                    Get Started
+                  </Link>
+                </Button>
+              </Card>
+            </motion.div>
+          ))}
+        </motion.div>
+      </motion.div>
+
+      {/* System Information with Animations */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.6 }}
+      >
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="w-5 h-5 text-primary" />
+              System Information
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.7 }}
+            >
+              <h4 className="font-semibold text-primary mb-2">Standards Compliance</h4>
+              <ul className="space-y-1 text-muted-foreground">
+                <li>• FHIR R4 Specification</li>
+                <li>• India EHR Standards 2016</li>
+                <li>• ICD-11 TM2 + Biomedicine</li>
+                <li>• NAMASTE Terminology</li>
+              </ul>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.8 }}
+            >
+              <h4 className="font-semibold text-primary mb-2">Supported Systems</h4>
+              <ul className="space-y-1 text-muted-foreground">
+                <li>• Ayurveda Medicine</li>
+                <li>• Siddha Medicine</li>
+                <li>• Unani Medicine</li>
+                <li>• Modern Biomedicine</li>
+              </ul>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.9 }}
+            >
+              <h4 className="font-semibold text-primary mb-2">Features</h4>
+              <ul className="space-y-1 text-muted-foreground">
+                <li>• Dual Coding Support</li>
+                <li>• FHIR Bundle Generation</li>
+                <li>• Bulk Processing</li>
+                <li>• Audit Logging</li>
+              </ul>
+            </motion.div>
+          </CardContent>
+        </Card>
+      </motion.div>
     </div>
   );
 };

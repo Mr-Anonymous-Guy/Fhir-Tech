@@ -41,16 +41,19 @@ class BrowserDatabaseService {
       const request = indexedDB.open(this.dbName, this.version);
 
       request.onerror = () => {
-        reject(new Error('Failed to open IndexedDB'));
+        console.error('Failed to open IndexedDB:', request.error);
+        reject(new Error('Failed to open IndexedDB: ' + (request.error?.message || 'Unknown error')));
       };
 
       request.onsuccess = (event) => {
         this.db = (event.target as IDBOpenDBRequest).result;
         this.isConnected = true;
+        console.log('BrowserDatabaseService: Connected to IndexedDB successfully');
         resolve();
       };
 
       request.onupgradeneeded = (event) => {
+        console.log('BrowserDatabaseService: Upgrading database schema');
         const db = (event.target as IDBOpenDBRequest).result;
         
         // Create mappings store

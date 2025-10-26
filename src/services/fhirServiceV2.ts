@@ -37,25 +37,34 @@ class EnhancedFHIRService {
   };
 
   constructor() {
-    this.initialize();
+    // Don't initialize immediately to avoid blocking the main thread
+    // Initialization will happen when services are first accessed
+    console.log('EnhancedFHIRService: Created instance');
   }
 
   private async initialize() {
+    // Prevent multiple concurrent initializations
+    if (this.isInitialized) {
+      return;
+    }
+
     try {
+      console.log('EnhancedFHIRService: Starting initialization...');
       // Try to connect to MongoDB API first
       await dbService.connect();
 
       // Check if we need to seed initial data
       const stats = await dbService.getMappingStats();
       if (stats.totalMappings === 0) {
-        console.log('No existing data found, seeding initial data...');
+        console.log('EnhancedFHIRService: No existing data found, seeding initial data...');
         await this.seedInitialData();
       }
 
       this.isInitialized = true;
-      console.log('Enhanced FHIR Service initialized successfully with MongoDB API');
+      this.useBrowserFallback = false;
+      console.log('EnhancedFHIRService: Initialized successfully with MongoDB API');
     } catch (error) {
-      console.warn('MongoDB API not available, falling back to browser database:', error);
+      console.warn('EnhancedFHIRService: MongoDB API not available, falling back to browser database:', error);
       // Fall back to browser-based storage
       await this.initializeBrowserFallback();
     }

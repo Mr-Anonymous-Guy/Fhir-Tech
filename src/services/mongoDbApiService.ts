@@ -27,6 +27,7 @@ interface AuditFilters {
 
 class MongoDbApiService {
   private baseUrl = 'http://localhost:3001/api';
+  private isAvailable = false;
 
   // Helper method for API requests
   private async apiRequest(endpoint: string, options: RequestInit = {}) {
@@ -38,22 +39,35 @@ class MongoDbApiService {
       },
     };
 
-    const response = await fetch(url, { ...defaultOptions, ...options });
-    
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: response.statusText }));
-      throw new Error(error.error || `HTTP ${response.status}: ${response.statusText}`);
-    }
+    try {
+      const response = await fetch(url, { ...defaultOptions, ...options });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        let errorData;
+        try {
+          errorData = JSON.parse(errorText);
+        } catch {
+          errorData = { error: errorText || response.statusText };
+        }
+        throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+      }
 
-    return response.json();
+      return response.json();
+    } catch (error) {
+      console.error(`API request failed for ${url}:`, error);
+      throw error;
+    }
   }
 
   async connect(): Promise<void> {
     // Test connection to backend
     try {
-      await this.apiRequest('/health', { method: 'GET' });
-      console.log('✅ Connected to MongoDB API backend');
+      const healthCheck = await this.apiRequest('/health', { method: 'GET' });
+      this.isAvailable = true;
+      console.log('✅ Connected to MongoDB API backend. Database status:', healthCheck.database);
     } catch (error) {
+      this.isAvailable = false;
       console.error('❌ Failed to connect to MongoDB API backend:', error);
       throw new Error('Backend API is not available. Please ensure the backend server is running on port 3001.');
     }
@@ -61,12 +75,12 @@ class MongoDbApiService {
 
   async disconnect(): Promise<void> {
     // No action needed for HTTP API
+    this.isAvailable = false;
     console.log('✅ MongoDB API service disconnected');
   }
 
   isConnectedDb(): boolean {
-    // Always return true as we check connection on each request
-    return true;
+    return this.isAvailable;
   }
 
   // Mapping operations

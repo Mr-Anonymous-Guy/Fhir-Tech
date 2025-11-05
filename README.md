@@ -320,23 +320,8 @@ Add badges from somewhere like: [shields.io](https://shields.io/)
 [![GPLv3 License](https://img.shields.io/badge/License-GPL%20v3-yellow.svg)](https://opensource.org/licenses/)
 [![AGPL License](https://img.shields.io/badge/license-AGPL-blue.svg)](http://www.gnu.org/licenses/agpl-3.0)
 
-## Color Reference
-
-| Color             | Hex                                                                |
-| ----------------- | ------------------------------------------------------------------ |
-| Example Color | ![#0a192f](https://via.placeholder.com/10/0a192f?text=+) #0a192f |
-| Example Color | ![#f8f8f8](https://via.placeholder.com/10/f8f8f8?text=+) #f8f8f8 |
-| Example Color | ![#00b48a](https://via.placeholder.com/10/00b48a?text=+) #00b48a |
-| Example Color | ![#00d1a0](https://via.placeholder.com/10/00b48a?text=+) #00d1a0 |
 
 
-## Contributing
-
-Contributions are always welcome!
-
-See `contributing.md` for ways to get started.
-
-Please adhere to this project's `code of conduct`.
 
 
 ## Demo
@@ -353,26 +338,6 @@ To deploy this project run
 ```
 
 
-## Documentation
-
-[Documentation](https://linktodocumentation)
-
-
-## Environment Variables
-
-To run this project, you will need to add the following environment variables to your .env file
-
-`API_KEY`
-
-`ANOTHER_API_KEY`
-
-
-## Used By
-
-This project is used by the following companies:
-
-- Company 1
-- Company 2
 
 
 # Project Title
@@ -931,27 +896,3 @@ npm run lint
 MIT License - see [LICENSE](LICENSE) file for details.
 
 ---
-
-## 🆘 Support
-
-- **📧 Email**: support@namaste-sync.dev
-- **🐛 Issues**: [GitHub Issues](https://github.com/FallenDevil666/namaste-sync-33051/issues)
-- **📖 Wiki**: [Project Wiki](https://github.com/FallenDevil666/namaste-sync-33051/wiki)
-- **💬 Discussions**: [GitHub Discussions](https://github.com/FallenDevil666/namaste-sync-33051/discussions)
-
----
-
-## 🙏 Acknowledgments
-
-- **Ministry of AYUSH** - Government of India
-- **ICD-11** - World Health Organization
-- **FHIR Community** - HL7 International
-- **MongoDB** - Data storage
-- **React** - UI library
-- **Open Source Community** - Amazing tools & libraries
-
----
-
-**Built with ❤️ for traditional medicine interoperability**
-
-**Version**: 1.0.0 | **Last Updated**: November 2025

@@ -9,6 +9,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const database = require('./database');
+const authService = require('./services/authService');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -62,6 +63,91 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
     database: database.isConnected
   });
+});
+
+// Authentication endpoints
+app.post('/api/auth/register', async (req, res) => {
+  try {
+    const { email, password, username, fullName } = req.body;
+    
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
+    
+    const result = await authService.register({ email, password, username, fullName });
+    res.json(result);
+  } catch (error) {
+    console.error('Registration error:', error);
+    res.status(400).json({ error: error.message });
+  }
+});
+
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
+    
+    const result = await authService.login(email, password);
+    res.json(result);
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(401).json({ error: error.message });
+  }
+});
+
+app.post('/api/auth/verify-token', async (req, res) => {
+  try {
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    
+    if (!token) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+    
+    const decoded = await authService.verifyToken(token);
+    res.json({ valid: true, user: decoded });
+  } catch (error) {
+    console.error('Token verification error:', error);
+    res.status(401).json({ error: 'Invalid token' });
+  }
+});
+
+app.get('/api/auth/user/:id', async (req, res) => {
+  try {
+    const user = await authService.getUserById(req.params.id);
+    res.json(user);
+  } catch (error) {
+    console.error('Get user error:', error);
+    res.status(404).json({ error: error.message });
+  }
+});
+
+app.put('/api/auth/profile/:id', async (req, res) => {
+  try {
+    const result = await authService.updateUserProfile(req.params.id, req.body);
+    res.json(result);
+  } catch (error) {
+    console.error('Update profile error:', error);
+    res.status(400).json({ error: error.message });
+  }
+});
+
+app.post('/api/auth/change-password', async (req, res) => {
+  try {
+    const { userId, currentPassword, newPassword } = req.body;
+    
+    if (!userId || !currentPassword || !newPassword) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+    
+    const result = await authService.changePassword(userId, currentPassword, newPassword);
+    res.json(result);
+  } catch (error) {
+    console.error('Change password error:', error);
+    res.status(400).json({ error: error.message });
+  }
 });
 
 // Mappings endpoints
@@ -344,10 +430,14 @@ async function startServer() {
     await database.connect();
     
     // Initialize with sample data if empty
-    const stats = await database.getMappingStats();
-    if (stats.totalMappings === 0) {
-      console.log('📥 Initializing database with sample data...');
-      await initializeSampleData();
+    try {
+      const stats = await database.getMappingStats();
+      if (stats.totalMappings === 0) {
+        console.log('📥 Initializing database with sample data...');
+        await initializeSampleData();
+      }
+    } catch (error) {
+      console.warn('⚠️ Could not check mapping stats, continuing startup:', error.message);
     }
 
     // Start server

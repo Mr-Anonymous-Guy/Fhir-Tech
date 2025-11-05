@@ -53,18 +53,25 @@ class EnhancedFHIRService {
       // Try to connect to MongoDB API first
       await dbService.connect();
 
-      // Check if we need to seed initial data
-      const stats = await dbService.getMappingStats();
-      if (stats.totalMappings === 0) {
-        console.log('EnhancedFHIRService: No existing data found, seeding initial data...');
-        await this.seedInitialData();
-      }
+      // Only check for data if the database service is actually available
+      if (dbService.isConnectedDb()) {
+        // Check if we need to seed initial data
+        const stats = await dbService.getMappingStats();
+        if (stats.totalMappings === 0) {
+          console.log('EnhancedFHIRService: No existing data found, seeding initial data...');
+          await this.seedInitialData();
+        }
 
-      this.isInitialized = true;
-      this.useBrowserFallback = false;
-      console.log('EnhancedFHIRService: Initialized successfully with MongoDB API');
+        this.isInitialized = true;
+        this.useBrowserFallback = false;
+        console.log('EnhancedFHIRService: Initialized successfully with MongoDB API');
+      } else {
+        // Fall back to browser-based storage
+        console.warn('EnhancedFHIRService: MongoDB API not available, falling back to browser database');
+        await this.initializeBrowserFallback();
+      }
     } catch (error) {
-      console.warn('EnhancedFHIRService: MongoDB API not available, falling back to browser database:', error);
+      console.warn('EnhancedFHIRService: Error during initialization, falling back to browser database:', error);
       // Fall back to browser-based storage
       await this.initializeBrowserFallback();
     }
@@ -137,39 +144,18 @@ class EnhancedFHIRService {
     return lines
       .filter(line => line.trim())
       .map(line => {
-        const [namaste_code, namaste_term, icd11_tm2_code, icd11_biomedicine_code, description] =
-          line.split(',').map(field => field.trim().replace(/"/g, ''));
-
-        // Extract category from code prefix
-        let category: 'Ayurveda' | 'Siddha' | 'Unani' = 'Ayurveda';
-        if (namaste_code.startsWith('AYU-')) category = 'Ayurveda';
-        else if (namaste_code.startsWith('SID-')) category = 'Siddha';
-        else if (namaste_code.startsWith('UNA-')) category = 'Unani';
-
-        // Generate chapter name from traditional term
-        let chapter_name = 'General Medicine';
-        const term = namaste_term.toLowerCase();
-        if (term.includes('respiratory') || term.includes('cough') || term.includes('asthma')) {
-          chapter_name = 'Respiratory System Disorders';
-        } else if (term.includes('digestive') || term.includes('gastro') || term.includes('diarrhea')) {
-          chapter_name = 'Digestive System Disorders';
-        } else if (term.includes('skin') || term.includes('dermatitis')) {
-          chapter_name = 'Skin and Tissue Disorders';
-        } else if (term.includes('fever') || term.includes('infection')) {
-          chapter_name = 'Infectious Diseases';
-        } else if (term.includes('diabetes') || term.includes('metabolic')) {
-          chapter_name = 'Endocrine and Metabolic Disorders';
-        }
+        const [namaste_code, namaste_term, category, chapter_name, icd11_tm2_code, icd11_tm2_description, icd11_biomedicine_code, confidence_score] =
+          line.split(',').map(field => field.trim().replace(/^"|"$/g, ''));
 
         return {
           namaste_code,
           namaste_term,
-          category,
+          category: category as 'Ayurveda' | 'Siddha' | 'Unani',
           chapter_name,
           icd11_tm2_code,
-          icd11_tm2_description: description,
+          icd11_tm2_description,
           icd11_biomedicine_code,
-          confidence_score: 0.95
+          confidence_score: parseFloat(confidence_score) || 0.95
         };
       });
   }
@@ -523,7 +509,7 @@ class EnhancedFHIRService {
   }
 
   private generateSampleAuditLog(): AuditLogEntry[] {
-    const actions = ['search', 'translate', 'encounter_upload', 'bulk_upload', 'fhir_generation'];
+    const actions = ['search', 'translate', 'encounter_upload', 'bulk_upload', 'fhir_generation'] as const;
     const queries = ['fever', 'diabetes', 'headache', 'cough', 'skin disorder', 'digestive issues'];
     const userNames = ['Dr. Priya Sharma', 'Dr. Rajesh Kumar', 'Dr. Anita Singh', 'Dr. Mohammad Ali'];
     
@@ -540,7 +526,7 @@ class EnhancedFHIRService {
         timestamp: timestamp.toISOString(),
         userId: `user-${Math.floor(Math.random() * 4) + 1}`,
         userName: userNames[Math.floor(Math.random() * userNames.length)],
-        action,
+        action: action as 'search' | 'translate' | 'encounter_upload' | 'bulk_upload' | 'fhir_generation',
         query: action === 'search' ? queries[Math.floor(Math.random() * queries.length)] : undefined,
         resource: action.includes('upload') ? 'Patient encounter data' : undefined,
         resultCount: action === 'search' ? Math.floor(Math.random() * 50) + 1 : undefined,
@@ -775,7 +761,7 @@ class EnhancedFHIRService {
     } else {
       // Use MongoDB API
       const mappingFilters: MappingFilters = {
-        category: filters.category,
+        category: filters.category as 'Ayurveda' | 'Siddha' | 'Unani' | undefined,
         chapter: filters.chapter
       };
 

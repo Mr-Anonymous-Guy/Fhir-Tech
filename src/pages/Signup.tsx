@@ -25,7 +25,6 @@ import {
   Check,
   X
 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import NAMASTELogo from '@/components/NAMASTELogo';
 
 const Signup = () => {
@@ -60,6 +59,8 @@ const Signup = () => {
   const isPasswordValid = Object.values(passwordRequirements).every(Boolean);
   const passwordsMatch = password === confirmPassword && password.length > 0;
 
+  const { signup } = useAuth();
+
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -76,40 +77,23 @@ const Signup = () => {
     setLoading(true);
 
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: fullName,
-          }
+      await signup(email, password, fullName);
+      toast.success('Account created successfully! You are now logged in.');
+      navigate('/app');
+    } catch (error) {
+      console.error('Signup error:', error);
+      
+      if (error instanceof Error) {
+        if (error.message.includes('already exists')) {
+          toast.error('User with this email or username already exists');
+        } else if (error.message.includes('fetch') || error.message.includes('Failed to fetch')) {
+          toast.error('Unable to connect to authentication service. Please ensure MongoDB and the backend server are running.');
+        } else {
+          toast.error(error.message);
         }
-      });
-
-      if (error) {
-        console.error('Signup error details:', error);
-        throw error;
-      }
-
-      console.log('Signup success:', data);
-      
-      if (data.user && !data.session) {
-        // User created but needs email confirmation
-        toast.success('Account created successfully! Please check your email and click the confirmation link to complete registration.', {
-          duration: 8000
-        });
-      } else if (data.session) {
-        // User created and automatically logged in (email confirmation disabled)
-        toast.success('Account created and you are now logged in!');
-        navigate('/app');
-        return;
       } else {
-        toast.success('Account created! Please check your email to verify your account.');
+        toast.error('Signup failed. Please try again.');
       }
-      
-      navigate('/login');
-    } catch (error: any) {
-      toast.error(error.message || 'Signup failed. Please try again.');
     } finally {
       setLoading(false);
     }

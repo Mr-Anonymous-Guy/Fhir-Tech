@@ -1,13 +1,26 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
+import { mongoAuthService } from '@/services/mongoAuthService';
+
+interface User {
+  _id: string;
+  email: string;
+  username: string;
+  fullName: string;
+  role: string;
+  verified: boolean;
+  createdAt: string;
+  updatedAt: string;
+  lastLogin: string | null;
+}
 
 interface AuthContextType {
   user: User | null;
-  session: Session | null;
   isAuthenticated: boolean;
-  logout: () => Promise<void>;
+  logout: () => void;
   loading: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  signup: (email: string, password: string, fullName: string) => Promise<void>;
+  updateProfile: (updateData: Partial<User>) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -26,32 +39,37 @@ interface AuthProviderProps {
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-      }
-    );
-
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
+    // Check if user is already logged in
+    const currentUser = mongoAuthService.getCurrentUser();
+    if (currentUser) {
+      setUser(currentUser);
+    }
+    setLoading(false);
   }, []);
 
-  const logout = async () => {
-    await supabase.auth.signOut();
+  const logout = () => {
+    mongoAuthService.logout();
     setUser(null);
-    setSession(null);
+  };
+
+  const login = async (email: string, password: string) => {
+    const result = await mongoAuthService.login(email, password);
+    setUser(result.user);
+  };
+
+  const signup = async (email: string, password: string, fullName: string) => {
+    const result = await mongoAuthService.register(email, password, fullName);
+    // Note: User needs to login after signup
+    setUser(result.user);
+  };
+
+  const updateProfile = async (updateData: Partial<User>) => {
+    if (!user) throw new Error('No user logged in');
+    const result = await mongoAuthService.updateProfile(user._id, updateData);
+    setUser(result.user);
   };
 
   const isAuthenticated = !!user;
@@ -60,10 +78,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     <AuthContext.Provider
       value={{
         user,
-        session,
         isAuthenticated,
         logout,
-        loading
+        loading,
+        login,
+        signup,
+        updateProfile
       }}
     >
       {children}

@@ -12,7 +12,11 @@
     "backend": "cd backend && npm start",
     "backend:dev": "cd backend && npm run dev",
     "backend:install": "cd backend && npm install",
-    "dev:full": "concurrently \"npm run backend:dev\" \"npm run dev\""
+    "dev:full": "concurrently \"npm run backend:dev\" \"npm run dev\"",
+    "dev:full:help": "echo Make sure Docker is running and Supabase is started with 'npx supabase start' before running this command",
+    "check-services": "node check-services.js",
+    "supabase:start": "npx supabase start",
+    "supabase:status": "npx supabase status"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

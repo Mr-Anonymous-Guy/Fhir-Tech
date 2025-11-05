@@ -68,8 +68,8 @@ class MongoDbApiService {
       console.log('✅ Connected to MongoDB API backend. Database status:', healthCheck.database);
     } catch (error) {
       this.isAvailable = false;
-      console.error('❌ Failed to connect to MongoDB API backend:', error);
-      throw new Error('Backend API is not available. Please ensure the backend server is running on port 3001.');
+      console.warn('⚠️ MongoDB API backend not available, will use browser fallback:', error);
+      // Don't throw error here to allow browser fallback to work
     }
   }
 

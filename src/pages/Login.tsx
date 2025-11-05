@@ -23,12 +23,11 @@ import {
   Shield,
   CheckCircle
 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import NAMASTELogo from '@/components/NAMASTELogo';
 
 const Login = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, login } = useAuth();
   const { enterDemoMode } = useDemo();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
@@ -48,33 +47,23 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        console.error('Login error details:', error);
-        
-        // Handle specific error cases
-        if (error.message.includes('Email not confirmed')) {
-          toast.error('Please check your email and click the confirmation link before signing in.', {
-            duration: 8000
-          });
-        } else if (error.message.includes('Invalid login credentials')) {
-          toast.error('Invalid email or password. Please check your credentials.');
-        } else {
-          toast.error(error.message || 'Login failed. Please try again.');
-        }
-        return;
-      }
-
-      console.log('Login success:', data);
+      await login(email, password);
       toast.success('Welcome back! Logging you in...');
       navigate('/app');
-    } catch (error: any) {
-      console.error('Login exception:', error);
-      toast.error(error.message || 'Login failed. Please check your credentials.');
+    } catch (error) {
+      console.error('Login error:', error);
+      
+      if (error instanceof Error) {
+        if (error.message.includes('Invalid email or password')) {
+          toast.error('Invalid email or password. Please check your credentials.');
+        } else if (error.message.includes('fetch') || error.message.includes('Failed to fetch')) {
+          toast.error('Unable to connect to authentication service. Please ensure MongoDB and the backend server are running.');
+        } else {
+          toast.error(error.message);
+        }
+      } else {
+        toast.error('Login failed. Please try again.');
+      }
     } finally {
       setLoading(false);
     }

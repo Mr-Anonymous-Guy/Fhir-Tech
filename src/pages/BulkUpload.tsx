@@ -69,8 +69,8 @@ const BulkUpload = () => {
       
       // Validate header
       const expectedHeader = 'namaste_code,namaste_term,category,chapter_name,icd11_tm2_code,icd11_tm2_description,icd11_biomedicine_code,confidence_score';
-      if (!header.toLowerCase().includes('namaste_code')) {
-        throw new Error('Invalid CSV format. Expected header: ' + expectedHeader);
+      if (header.trim().toLowerCase() !== expectedHeader.toLowerCase()) {
+        throw new Error('Invalid CSV format.\nExpected header: ' + expectedHeader + '\nActual header: ' + header);
       }
 
       const mappings: NAMASTEMapping[] = [];
@@ -80,10 +80,10 @@ const BulkUpload = () => {
         if (!line.trim()) return;
         
         const lineNumber = index + 2; // +2 because we skip header and 0-index
-        const fields = line.split(',').map(field => field.trim().replace(/"/g, ''));
+        const fields = line.split(',').map(field => field.trim().replace(/^"|"$/g, ''));
         
         if (fields.length < 8) {
-          validationErrors.push(`Line ${lineNumber}: Missing required fields`);
+          validationErrors.push(`Line ${lineNumber}: Missing required fields. Expected 8 fields, got ${fields.length}`);
           return;
         }
 

@@ -17,7 +17,10 @@ class DatabaseService {
       const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017';
       const dbName = process.env.MONGODB_DB_NAME || 'namaste-sync';
 
-      this.client = new MongoClient(uri);
+      this.client = new MongoClient(uri, {
+        connectTimeoutMS: 5000,
+        serverSelectionTimeoutMS: 5000,
+      });
       await this.client.connect();
       this.db = this.client.db(dbName);
       this.isConnected = true;
@@ -29,7 +32,7 @@ class DatabaseService {
       
       return this.db;
     } catch (error) {
-      console.error('❌ Failed to connect to MongoDB:', error);
+      console.error('❌ Failed to connect to MongoDB:', error.message);
       throw error;
     }
   }
@@ -42,55 +45,91 @@ class DatabaseService {
       const userSessionsCollection = this.db.collection('userSessions');
       const supportTicketsCollection = this.db.collection('supportTickets');
       const systemMetricsCollection = this.db.collection('systemMetrics');
+      const usersCollection = this.db.collection('users');
 
       // Create indexes for mappings collection
-      await mappingsCollection.createIndexes([
-        { key: { namaste_code: 1 }, unique: true },
-        { key: { namaste_term: 'text', icd11_tm2_description: 'text' } },
-        { key: { category: 1 } },
-        { key: { chapter_name: 1 } },
-        { key: { confidence_score: -1 } }
-      ]);
+      try {
+        await mappingsCollection.createIndexes([
+          { key: { namaste_code: 1 }, unique: true },
+          { key: { namaste_term: 'text', icd11_tm2_description: 'text' } },
+          { key: { category: 1 } },
+          { key: { chapter_name: 1 } },
+          { key: { confidence_score: -1 } }
+        ]);
+      } catch (err) {
+        console.warn('⚠️ Warning: Could not create mappings indexes:', err.message);
+      }
 
       // Create indexes for audit logs collection
-      await auditLogsCollection.createIndexes([
-        { key: { timestamp: -1 } },
-        { key: { userId: 1 } },
-        { key: { action: 1 } }
-      ]);
+      try {
+        await auditLogsCollection.createIndexes([
+          { key: { timestamp: -1 } },
+          { key: { userId: 1 } },
+          { key: { action: 1 } }
+        ]);
+      } catch (err) {
+        console.warn('⚠️ Warning: Could not create audit logs indexes:', err.message);
+      }
 
       // Create indexes for notifications collection
-      await notificationsCollection.createIndexes([
-        { key: { userId: 1 } },
-        { key: { read: 1 } },
-        { key: { createdAt: -1 } },
-        { key: { priority: -1 } }
-      ]);
+      try {
+        await notificationsCollection.createIndexes([
+          { key: { userId: 1 } },
+          { key: { read: 1 } },
+          { key: { createdAt: -1 } },
+          { key: { priority: -1 } }
+        ]);
+      } catch (err) {
+        console.warn('⚠️ Warning: Could not create notifications indexes:', err.message);
+      }
 
       // Create indexes for user sessions collection
-      await userSessionsCollection.createIndexes([
-        { key: { userId: 1 } },
-        { key: { sessionId: 1 }, unique: true },
-        { key: { expiresAt: 1 }, expireAfterSeconds: 0 }
-      ]);
+      try {
+        await userSessionsCollection.createIndexes([
+          { key: { userId: 1 } },
+          { key: { sessionId: 1 }, unique: true },
+          { key: { expiresAt: 1 }, expireAfterSeconds: 0 }
+        ]);
+      } catch (err) {
+        console.warn('⚠️ Warning: Could not create user sessions indexes:', err.message);
+      }
 
       // Create indexes for support tickets collection
-      await supportTicketsCollection.createIndexes([
-        { key: { userId: 1 } },
-        { key: { status: 1 } },
-        { key: { priority: -1 } },
-        { key: { createdAt: -1 } }
-      ]);
+      try {
+        await supportTicketsCollection.createIndexes([
+          { key: { userId: 1 } },
+          { key: { status: 1 } },
+          { key: { priority: -1 } },
+          { key: { createdAt: -1 } }
+        ]);
+      } catch (err) {
+        console.warn('⚠️ Warning: Could not create support tickets indexes:', err.message);
+      }
 
       // Create indexes for system metrics collection
-      await systemMetricsCollection.createIndexes([
-        { key: { timestamp: -1 } },
-        { key: { metricType: 1 } }
-      ]);
+      try {
+        await systemMetricsCollection.createIndexes([
+          { key: { timestamp: -1 } },
+          { key: { metricType: 1 } }
+        ]);
+      } catch (err) {
+        console.warn('⚠️ Warning: Could not create system metrics indexes:', err.message);
+      }
 
-      console.log('✅ Database indexes created successfully');
+      // Create indexes for users collection
+      try {
+        await usersCollection.createIndexes([
+          { key: { email: 1 }, unique: true },
+          { key: { username: 1 }, unique: true },
+          { key: { createdAt: -1 } }
+        ]);
+      } catch (err) {
+        console.warn('⚠️ Warning: Could not create users indexes:', err.message);
+      }
+
+      console.log('✅ Database index creation attempted');
     } catch (error) {
-      console.error('⚠️ Warning: Failed to create indexes:', error.message);
+      console.warn('⚠️ Warning: Database index creation failed:', error.message);
     }
   }
 
@@ -158,17 +197,24 @@ class DatabaseService {
   async getMappingStats() {
     const collection = this.db.collection('mappings');
     
-    const stats = await collection.aggregate([
-      {
-        $group: {
-          _id: null,
-          totalMappings: { $sum: 1 },
-          avgConfidenceScore: { $avg: '$confidence_score' }
+    try {
+      const stats = await collection.aggregate([
+        {
+          $group: {
+            _id: null,
+            totalMappings: { $sum: 1 },
+            avgConfidenceScore: { $avg: '$confidence_score' }
+          }
         }
-      }
-    ]).toArray();
+      ]).toArray();
 
-    return stats[0] || { totalMappings: 0, avgConfidenceScore: 0 };
+      return stats[0] || { totalMappings: 0, avgConfidenceScore: 0 };
+    } catch (error) {
+      console.warn('Warning: Could not get mapping stats:', error.message);
+      // Return default stats if aggregation fails
+      const count = await collection.countDocuments({});
+      return { totalMappings: count, avgConfidenceScore: 0 };
+    }
   }
 
   async getCategories() {

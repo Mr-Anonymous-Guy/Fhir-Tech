@@ -1,0 +1,3 @@
+namaste_code,namaste_term,category,chapter_name,icd11_tm2_code,icd11_tm2_description,icd11_biomedicine_code,confidence_score
+TEST-001,Test Condition,Ayurveda,General Medicine,XF99999,Test traditional disorder,BB999,0.95
+TEST-002,Another Test,Siddha,Digestive System Disorders,XB88888,Another traditional disorder,BB888,0.85

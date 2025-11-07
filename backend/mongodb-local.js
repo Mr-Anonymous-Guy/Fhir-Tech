@@ -18,9 +18,15 @@ class LocalMongoDBManager {
    * Ensure data directory exists
    */
   ensureDataDirectory() {
-    if (!fs.existsSync(this.dataPath)) {
-      fs.mkdirSync(this.dataPath, { recursive: true });
-      console.log(`📁 Created MongoDB data directory: ${this.dataPath}`);
+    try {
+      if (!fs.existsSync(this.dataPath)) {
+        fs.mkdirSync(this.dataPath, { recursive: true });
+        console.log(`📁 Created MongoDB data directory: ${this.dataPath}`);
+      }
+      return true;
+    } catch (error) {
+      console.error(`❌ Failed to create MongoDB data directory: ${error.message}`);
+      return false;
     }
   }
 
@@ -29,7 +35,11 @@ class LocalMongoDBManager {
    */
   async start() {
     try {
-      this.ensureDataDirectory();
+      // Try to create data directory first
+      const dirCreated = this.ensureDataDirectory();
+      if (!dirCreated) {
+        throw new Error('Could not create data directory');
+      }
 
       console.log('🔄 Starting local MongoDB instance...');
       
@@ -49,10 +59,11 @@ class LocalMongoDBManager {
       console.log(`📍 MongoDB URI: ${uri}`);
       console.log(`💾 Data stored in: ${this.dataPath}`);
 
-      return uri;
+      return { uri, success: true };
     } catch (error) {
       console.error('❌ Failed to start local MongoDB instance:', error.message);
-      throw error;
+      console.log('⚠️ Falling back to file-based local storage');
+      return { uri: null, success: false, error: error.message };
     }
   }
 

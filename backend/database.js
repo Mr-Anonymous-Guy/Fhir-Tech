@@ -16,15 +16,39 @@ class DatabaseService {
 
   async connect() {
     try {
-      // Try to start local MongoDB instance first
-      let uri;
+      // Try to start local MongoDB instance first (with data folder)
+      let uri = null;
+      let useLocalStorage = false;
+      
       try {
-        console.log('🚀 Attempting to start local MongoDB instance...');
-        uri = await startLocalMongoDB();
-        console.log('✅ Using local MongoDB instance');
+        console.log('🚀 Attempting to start local MongoDB instance with data folder...');
+        const result = await startLocalMongoDB();
+        
+        if (result.success && result.uri) {
+          uri = result.uri;
+          console.log('✅ Using local MongoDB instance with mongodb-data folder');
+        } else {
+          console.log('⚠️ MongoDB folder creation failed, will use file-based storage');
+          useLocalStorage = true;
+        }
       } catch (localError) {
-        console.log('⚠️ Could not start local MongoDB, using configured URI');
+        console.log('⚠️ Could not start local MongoDB:', localError.message);
+        console.log('💾 Falling back to file-based local storage');
+        useLocalStorage = true;
+      }
+      
+      // If MongoDB failed, use environment URI as last resort
+      if (!uri && !useLocalStorage) {
         uri = process.env.MONGODB_URI || 'mongodb://localhost:27017';
+        console.log('🔌 Using configured MongoDB URI');
+      }
+      
+      // If we should use local storage, mark it and continue without MongoDB
+      if (useLocalStorage) {
+        this.isConnected = false;
+        this.useLocalStorage = true;
+        console.log('✅ File-based local storage ready (local-data/users.json)');
+        return null; // Signal that we're using local storage
       }
       
       const dbName = process.env.MONGODB_DB_NAME || 'namaste-sync';

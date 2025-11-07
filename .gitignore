@@ -11,6 +11,9 @@ backend/.env
 # MongoDB local data
 mongodb-data/
 
+# Local file-based storage
+local-data/
+
 # Build output
 dist/
 build/

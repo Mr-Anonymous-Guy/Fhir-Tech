@@ -57,6 +57,7 @@ module.exports = async function handler(req, res) {
     const user = users.get(email.toLowerCase());
     if (!user) {
       return res.status(401).json({
+        success: false,
         error: 'Invalid email or password'
       });
     }
@@ -65,6 +66,7 @@ module.exports = async function handler(req, res) {
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
       return res.status(401).json({
+        success: false,
         error: 'Invalid email or password'
       });
     }

@@ -4,6 +4,8 @@
  */
 
 const { MongoClient, ObjectId } = require('mongodb');
+const { startLocalMongoDB } = require('./mongodb-local');
+require('dotenv').config();
 
 class DatabaseService {
   constructor() {
@@ -14,7 +16,17 @@ class DatabaseService {
 
   async connect() {
     try {
-      const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017';
+      // Try to start local MongoDB instance first
+      let uri;
+      try {
+        console.log('🚀 Attempting to start local MongoDB instance...');
+        uri = await startLocalMongoDB();
+        console.log('✅ Using local MongoDB instance');
+      } catch (localError) {
+        console.log('⚠️ Could not start local MongoDB, using configured URI');
+        uri = process.env.MONGODB_URI || 'mongodb://localhost:27017';
+      }
+      
       const dbName = process.env.MONGODB_DB_NAME || 'namaste-sync';
 
       this.client = new MongoClient(uri, {

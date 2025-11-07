@@ -2,12 +2,12 @@
 // NAMASTE-SYNC Register API (Vercel Serverless)
 // ===========================================
 
-import bcrypt from 'bcryptjs';
+const bcrypt = require('bcryptjs');
 
 // Mock user database (in production, use Vercel KV or external DB)
 const users = new Map();
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   // Handle CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -18,15 +18,28 @@ export default async function handler(req, res) {
   }
 
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return res.status(405).json({ success: false, error: 'Method not allowed' });
   }
 
   try {
-    const { email, password, firstName, lastName } = req.body;
+    // Parse request body for Vercel serverless
+    let body = {};
+    if (typeof req.body === 'string') {
+      try {
+        body = JSON.parse(req.body);
+      } catch (e) {
+        body = {};
+      }
+    } else if (req.body) {
+      body = req.body;
+    }
+
+    const { email, password, firstName, lastName } = body;
 
     // Validation
     if (!email || !password || !firstName || !lastName) {
       return res.status(400).json({
+        success: false,
         error: 'All fields are required'
       });
     }

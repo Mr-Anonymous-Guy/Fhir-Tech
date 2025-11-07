@@ -4,18 +4,7 @@
 
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-
-// Mock user database (in production, use Vercel KV or external DB)
-const users = new Map([
-  ['admin@namaste-sync.com', {
-    id: '1',
-    email: 'admin@namaste-sync.com',
-    password: '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj3QJflHQrxq', // password: Admin123!
-    firstName: 'Admin',
-    lastName: 'User',
-    role: 'admin'
-  }]
-]);
+const { getUsers, saveUsers } = require('./_middleware');
 
 module.exports = async function handler(req, res) {
   // Handle CORS

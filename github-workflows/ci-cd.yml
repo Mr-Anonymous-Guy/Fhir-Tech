@@ -1,0 +1,354 @@
+# ===========================================
+# NAMASTE-SYNC CI/CD Pipeline
+# ===========================================
+# Automated build, test, and deployment pipeline
+# Multi-stage pipeline with proper environment separation
+
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  release:
+    types: [ published ]
+
+env:
+  NODE_VERSION: '18'
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # Code Quality and Testing Stage
+  code-quality:
+    name: Code Quality & Testing
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x, 20.x]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Full history for better analysis
+
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: |
+        npm ci
+        cd backend && npm ci
+        cd ../
+
+    - name: Run linting
+      run: npm run lint
+
+    - name: Run type checking
+      run: npm run type-check
+
+    - name: Run unit tests
+      run: npm run test:unit
+
+    - name: Run integration tests
+      run: npm run test:integration
+      env:
+        NODE_ENV: test
+
+    - name: Generate coverage report
+      run: npm run test:coverage
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage/lcov.info
+        flags: unittests
+        name: codecov-umbrella
+
+    - name: Security audit
+      run: npm audit --audit-level=high
+
+    - name: SonarCloud Scan
+      uses: SonarSource/sonarcloud-github-action@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  # Build and Package Stage
+  build:
+    name: Build & Package
+    runs-on: ubuntu-latest
+    needs: code-quality
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: |
+        npm ci
+        cd backend && npm ci
+        cd ../
+
+    - name: Build frontend application
+      run: npm run build
+      env:
+        NODE_ENV: production
+        VITE_API_BASE_URL: ${{ secrets.API_BASE_URL }}
+        VITE_APP_ENV: production
+
+    - name: Build backend application
+      run: |
+        cd backend
+        npm run build
+        cd ../
+
+    - name: Run security vulnerability scan
+      run: npm audit --audit-level=moderate
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-artifacts
+        path: |
+          dist/
+          backend/dist/
+          package*.json
+          backend/package*.json
+        retention-days: 7
+
+  # Docker Build and Security Scan
+  docker-build:
+    name: Docker Build & Security
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Log in to Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
+          type=sha,prefix={{branch}}-
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./Dockerfile.production
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        platforms: linux/amd64,linux/arm64
+
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+  # Staging Deployment
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: docker-build
+    if: github.ref == 'refs/heads/main'
+    environment: staging
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+
+    - name: Deploy to staging
+      run: |
+        echo "Deploying to staging environment..."
+        # Add your staging deployment commands here
+        # Example: docker-compose -f docker-compose.staging.yml up -d
+
+    - name: Run health checks
+      run: |
+        echo "Running health checks..."
+        # Add health check commands
+        # Example: curl -f https://staging.yourdomain.com/health
+
+    - name: Run end-to-end tests
+      run: |
+        echo "Running E2E tests on staging..."
+        # Add E2E test commands
+        # Example: npm run test:e2e -- --env=staging
+
+    - name: Performance testing
+      run: |
+        echo "Running performance tests..."
+        # Add performance test commands
+        # Example: npm run test:performance -- --env=staging
+
+    - name: Security penetration testing
+      run: |
+        echo "Running security tests..."
+        # Add security test commands
+        # Example: npm run test:security -- --env=staging
+
+  # Production Deployment
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: deploy-staging
+    if: github.event_name == 'release'
+    environment: production
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+
+    - name: Create backup before deployment
+      run: |
+        echo "Creating database backup..."
+        # Add backup commands
+
+    - name: Deploy to production (Blue-Green)
+      run: |
+        echo "Deploying to production using blue-green strategy..."
+        # Add production deployment commands
+
+    - name: Health checks on production
+      run: |
+        echo "Running health checks on production..."
+        # Add health check commands
+
+    - name: Smoke tests
+      run: |
+        echo "Running smoke tests..."
+        # Add smoke test commands
+
+    - name: Update load balancer
+      run: |
+        echo "Updating load balancer to point to new deployment..."
+        # Add load balancer update commands
+
+    - name: Cleanup old deployment
+      run: |
+        echo "Cleaning up old deployment..."
+        # Add cleanup commands
+
+    - name: Send deployment notification
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        channel: '#deployments'
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+
+  # Rollback Job
+  rollback:
+    name: Rollback Production
+    runs-on: ubuntu-latest
+    needs: deploy-production
+    if: failure() && github.ref == 'refs/heads/main'
+    environment: production
+
+    steps:
+    - name: Rollback deployment
+      run: |
+        echo "Rolling back production deployment..."
+        # Add rollback commands
+
+    - name: Restore database from backup
+      run: |
+        echo "Restoring database from backup..."
+        # Add database restore commands
+
+    - name: Send rollback notification
+      uses: 8398a7/action-slack@v3
+      with:
+        status: 'failure'
+        channel: '#deployments'
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+
+  # Post-deployment Monitoring
+  monitoring:
+    name: Post-deployment Monitoring
+    runs-on: ubuntu-latest
+    needs: [deploy-staging, deploy-production]
+    if: always() && (needs.deploy-staging.result == 'success' || needs.deploy-production.result == 'success')
+
+    steps:
+    - name: Verify application health
+      run: |
+        echo "Verifying application health after deployment..."
+        # Add health verification commands
+
+    - name: Check monitoring metrics
+      run: |
+        echo "Checking monitoring metrics..."
+        # Add metrics verification commands
+
+    - name: Verify alerting
+      run: |
+        echo "Verifying alerting systems..."
+        # Add alerting verification commands
+
+    - name: Generate deployment report
+      run: |
+        echo "Generating deployment report..."
+        # Add report generation commands

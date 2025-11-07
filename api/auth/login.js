@@ -32,10 +32,23 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const { email, password } = req.body;
+    // Parse request body for Vercel serverless
+    let body = {};
+    if (typeof req.body === 'string') {
+      try {
+        body = JSON.parse(req.body);
+      } catch (e) {
+        body = {};
+      }
+    } else if (req.body) {
+      body = req.body;
+    }
+
+    const { email, password } = body;
 
     if (!email || !password) {
       return res.status(400).json({
+        success: false,
         error: 'Email and password are required'
       });
     }

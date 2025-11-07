@@ -2,8 +2,8 @@
 // NAMASTE-SYNC Login API (Vercel Serverless)
 // ===========================================
 
-import jwt from 'jsonwebtoken';
-import bcrypt from 'bcryptjs';
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 
 // Mock user database (in production, use Vercel KV or external DB)
 const users = new Map([
@@ -17,7 +17,7 @@ const users = new Map([
   }]
 ]);
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   // Handle CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');

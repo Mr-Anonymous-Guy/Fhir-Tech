@@ -48,6 +48,7 @@ module.exports = async function handler(req, res) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return res.status(400).json({
+        success: false,
         error: 'Invalid email format'
       });
     }
@@ -55,6 +56,7 @@ module.exports = async function handler(req, res) {
     // Password validation
     if (password.length < 8) {
       return res.status(400).json({
+        success: false,
         error: 'Password must be at least 8 characters long'
       });
     }
@@ -62,6 +64,7 @@ module.exports = async function handler(req, res) {
     // Check if user already exists
     if (users.has(email.toLowerCase())) {
       return res.status(409).json({
+        success: false,
         error: 'User with this email already exists'
       });
     }

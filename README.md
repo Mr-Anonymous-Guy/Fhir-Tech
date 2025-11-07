@@ -718,7 +718,297 @@ GET http://localhost:3001/health
 
 ---
 
-## 🐳 Docker Deployment
+## 🚀 Production Deployment
+
+### 🎯 Quick Production Deployment
+
+**One-command deployment with all monitoring and security:**
+
+```bash
+# Clone and setup
+git clone https://github.com/FallenDevil666/namaste-sync-33051.git
+cd namaste-sync-33051
+
+# Configure environment
+./scripts/config-setup.sh
+
+# Deploy to production
+./scripts/deploy-enhanced.sh production --monitoring
+```
+
+### 📋 Production Prerequisites
+
+- **Docker & Docker Compose** (latest versions)
+- **Domain name** pointing to your server
+- **SSL certificate** (Let's Encrypt recommended)
+- **Minimum 4GB RAM, 2 CPU cores**
+- **50GB+ storage** (depending on data size)
+
+### 🔧 Production Environment Setup
+
+#### 1. Configure Environment Variables
+
+```bash
+# Run automated setup
+./scripts/config-setup.sh
+
+# Or manually configure:
+cp .env.example .env
+cp backend/.env.example backend/.env
+```
+
+**Edit `.env` for production:**
+```bash
+VITE_APP_ENV=production
+VITE_API_BASE_URL=https://yourdomain.com
+VITE_SUPABASE_PROJECT_ID=your_production_project_id
+VITE_SUPABASE_PUBLISHABLE_KEY=your_production_key
+```
+
+**Edit `backend/.env` for production:**
+```bash
+NODE_ENV=production
+JWT_SECRET=your-super-secure-jwt-secret-32-chars-min
+FRONTEND_URL=https://yourdomain.com
+ALLOWED_ORIGINS=https://yourdomain.com
+MONGODB_URI=mongodb://mongodb:27017/namaste-sync
+```
+
+#### 2. Generate Secrets
+
+```bash
+# Generate all required secrets
+./scripts/secrets-setup.sh
+
+# Or create manually:
+mkdir -p secrets
+echo "your_mongo_root_user" > secrets/mongo_root_username.txt
+echo "your_secure_mongo_password" > secrets/mongo_root_password.txt
+echo "your_grafana_password" > secrets/grafana_password.txt
+```
+
+#### 3. Configure Domain and SSL
+
+**Update `nginx/nginx.conf`:**
+```bash
+# Replace yourdomain.com with your actual domain
+sed -i 's/yourdomain.com/yourdomain.com/g' nginx/nginx.conf
+```
+
+**Set up SSL with Let's Encrypt:**
+```bash
+# Install certbot
+sudo apt install certbot python3-certbot-nginx
+
+# Get SSL certificate
+sudo certbot --nginx -d yourdomain.com -d www.yourdomain.com
+```
+
+### 🏗️ Deployment Options
+
+#### Option 1: Enhanced Production Deployment (Recommended)
+
+```bash
+# Full production deployment with monitoring
+./scripts/deploy-enhanced.sh production --monitoring
+```
+
+**Features:**
+- ✅ Blue-Green deployment (zero downtime)
+- ✅ Automated backup before deployment
+- ✅ Health checks and rollback capability
+- ✅ Comprehensive monitoring (Prometheus, Grafana)
+- ✅ Security hardening
+- ✅ SSL/HTTPS termination
+- ✅ Rate limiting and DDoS protection
+- ✅ Automated alerts and notifications
+
+#### Option 2: Docker Compose Production
+
+```bash
+# Deploy with production configuration
+docker-compose -f docker-compose.production.yml up -d
+```
+
+#### Option 3: Manual Docker Deployment
+
+```bash
+# Build production image
+docker build -f Dockerfile.production -t namaste-sync:prod .
+
+# Run with production settings
+docker run -d \
+  --name namaste-sync-prod \
+  -p 80:80 \
+  -p 443:443 \
+  -v $(pwd)/nginx/ssl:/etc/letsencrypt \
+  -v $(pwd)/secrets:/run/secrets \
+  namaste-sync:prod
+```
+
+### 📊 Monitoring and Management
+
+#### Access Points After Deployment
+
+- **Main Application**: https://yourdomain.com
+- **Health Check**: https://yourdomain.com/health
+- **API Health**: https://yourdomain.com/api/health
+- **Grafana Dashboard**: https://yourdomain.com/grafana
+- **Prometheus Metrics**: https://yourdomain.com/prometheus
+
+#### Monitoring Stack
+
+- **Grafana**: Visual dashboards and alerts
+- **Prometheus**: Metrics collection and storage
+- **Node Exporter**: System metrics
+- **MongoDB Exporter**: Database performance metrics
+- **AlertManager**: Alert routing and notifications
+
+#### Useful Commands
+
+```bash
+# Check deployment status
+docker-compose -f docker-compose.production.yml ps
+
+# View logs
+docker-compose -f docker-compose.production.yml logs -f
+
+# Check service health
+curl https://yourdomain.com/health
+
+# Backup database
+./scripts/backup-database.sh production full
+
+# Restart services
+./scripts/deploy-enhanced.sh production restart
+
+# Rollback deployment
+./scripts/deploy-enhanced.sh production rollback
+```
+
+### 🔒 Security Features
+
+- **SSL/TLS encryption** with modern cipher suites
+- **Security headers** (HSTS, CSP, X-Frame-Options, etc.)
+- **Rate limiting** and DDoS protection
+- **Input validation** and sanitization
+- **CSRF protection** with secure cookies
+- **Secret management** with encrypted storage
+- **Regular security updates** and vulnerability scanning
+
+### 📈 Performance Optimizations
+
+- **Nginx reverse proxy** with caching
+- **Redis caching** for frequently accessed data
+- **Database connection pooling**
+- **Asset compression** and browser caching
+- **Load balancing** support
+- **Auto-scaling** readiness
+
+### 🔄 CI/CD Integration
+
+#### GitHub Actions (Pre-configured)
+
+```yaml
+# .github/workflows/ci-cd.yml
+# Automated pipeline includes:
+# - Code quality checks
+# - Security scanning
+# - Automated testing
+# - Docker image building
+# - Staging deployment
+# - Production deployment (with approval)
+```
+
+#### Environment Management
+
+```bash
+# Deploy to different environments
+./scripts/deploy-enhanced.sh staging
+./scripts/deploy-enhanced.sh production
+
+# Environment-specific operations
+./scripts/deploy-enhanced.sh production backup
+./scripts/deploy-enhanced.sh production maintenance-on
+./scripts/deploy-enhanced.sh production maintenance-off
+```
+
+### 📁 Backup and Recovery
+
+#### Automated Backups
+
+```bash
+# Create full backup
+./scripts/backup-database.sh production full
+
+# Create incremental backup
+./scripts/backup-database.sh production incremental
+
+# List backups
+ls -la backups/
+
+# Restore from backup
+./scripts/deploy-enhanced.sh production restore backups/20240101_120000
+```
+
+#### Backup Features
+
+- **Automated daily backups** with retention policies
+- **Point-in-time recovery** capability
+- **Cloud storage integration** (AWS S3, Azure Blob)
+- **Backup verification** and integrity checks
+- **Disaster recovery** procedures
+
+### 🛠️ Troubleshooting Production Issues
+
+#### Health Checks
+
+```bash
+# Check overall health
+curl https://yourdomain.com/health
+
+# Detailed health report
+curl https://yourdomain.com/health/detailed
+
+# Service status
+docker-compose -f docker-compose.production.yml ps
+```
+
+#### Common Issues
+
+**SSL Certificate Issues:**
+```bash
+# Check certificate renewal
+sudo certbot certificates
+
+# Force renewal
+sudo certbot renew --force-renewal
+
+# Check nginx configuration
+nginx -t
+```
+
+**Database Connection Issues:**
+```bash
+# Check MongoDB logs
+docker logs namaste-sync_mongodb_1
+
+# Test database connection
+docker exec -it namaste-sync_mongodb_1 mongo
+```
+
+**Performance Issues:**
+```bash
+# Check system resources
+docker stats
+
+# Monitor database performance
+curl https://yourdomain.com/metrics
+```
+
+---
+
+## 🐳 Docker Development Deployment
 
 ### Build Docker Image
 
@@ -746,7 +1036,7 @@ docker start namaste-sync    # Start container
 docker rm namaste-sync       # Remove container
 ```
 
-### Docker Compose
+### Docker Compose Development
 
 Create `docker-compose.yml`:
 ```yaml
@@ -758,7 +1048,7 @@ services:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
-  
+
   app:
     build: .
     ports:

@@ -6,6 +6,7 @@
 
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const { ObjectId } = require('mongodb');
 const database = require('../database');
 const localUserStorage = require('../localUserStorage');
 
@@ -73,7 +74,7 @@ class AuthService {
       
       // Create user object
       const user = {
-        _id: new require('mongodb').ObjectId(),
+        _id: new ObjectId(),
         email: userData.email,
         username: userData.username || userData.email.split('@')[0],
         fullName: userData.fullName || '',
@@ -207,7 +208,7 @@ class AuthService {
     try {
       const usersCollection = database.db.collection('users');
       const user = await usersCollection.findOne({ 
-        _id: new require('mongodb').ObjectId(userId) 
+        _id: new ObjectId(userId) 
       });
       
       if (!user) {
@@ -235,7 +236,7 @@ class AuthService {
       safeUpdateData.updatedAt = new Date();
       
       const result = await usersCollection.updateOne(
-        { _id: new require('mongodb').ObjectId(userId) },
+        { _id: new ObjectId(userId) },
         { $set: safeUpdateData }
       );
       
@@ -264,7 +265,7 @@ class AuthService {
       
       // Find user
       const user = await usersCollection.findOne({ 
-        _id: new require('mongodb').ObjectId(userId) 
+        _id: new ObjectId(userId) 
       });
       
       if (!user) {

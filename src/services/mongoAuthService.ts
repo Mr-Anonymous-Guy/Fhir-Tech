@@ -28,17 +28,18 @@ interface RegisterResponse {
   message: string;
 }
 
-class MongoAuthService {
-  private baseUrl = 'http://localhost:3001/api/auth';
-  private tokenKey = 'namaste-auth-token';
-  private userKey = 'namaste-auth-user';
+// Create service object without class instantiation
+const mongoAuthService = {
+  baseUrl: 'http://localhost:3001/api/auth',
+  tokenKey: 'namaste-auth-token',
+  userKey: 'namaste-auth-user',
 
   /**
    * Register a new user
    */
   async register(email: string, password: string, fullName: string = ''): Promise<RegisterResponse> {
     try {
-      const response = await fetch(`${this.baseUrl}/register`, {
+      const response = await fetch(`${mongoAuthService.baseUrl}/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -62,14 +63,14 @@ class MongoAuthService {
       console.error('Registration error:', error);
       throw error;
     }
-  }
+  },
 
   /**
    * Login user
    */
   async login(email: string, password: string): Promise<LoginResponse> {
     try {
-      const response = await fetch(`${this.baseUrl}/login`, {
+      const response = await fetch(`${mongoAuthService.baseUrl}/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -85,36 +86,36 @@ class MongoAuthService {
       const data: LoginResponse = await response.json();
 
       // Store token and user data
-      localStorage.setItem(this.tokenKey, data.token);
-      localStorage.setItem(this.userKey, JSON.stringify(data.user));
+      localStorage.setItem(mongoAuthService.tokenKey, data.token);
+      localStorage.setItem(mongoAuthService.userKey, JSON.stringify(data.user));
 
       return data;
     } catch (error) {
       console.error('Login error:', error);
       throw error;
     }
-  }
+  },
 
   /**
    * Logout user
    */
   logout(): void {
-    localStorage.removeItem(this.tokenKey);
-    localStorage.removeItem(this.userKey);
-  }
+    localStorage.removeItem(mongoAuthService.tokenKey);
+    localStorage.removeItem(mongoAuthService.userKey);
+  },
 
   /**
    * Get stored token
    */
   getToken(): string | null {
-    return localStorage.getItem(this.tokenKey);
-  }
+    return localStorage.getItem(mongoAuthService.tokenKey);
+  },
 
   /**
    * Get current user
    */
   getCurrentUser(): User | null {
-    const userStr = localStorage.getItem(this.userKey);
+    const userStr = localStorage.getItem(mongoAuthService.userKey);
     if (!userStr) return null;
 
     try {
@@ -122,14 +123,14 @@ class MongoAuthService {
     } catch {
       return null;
     }
-  }
+  },
 
   /**
    * Verify token
    */
   async verifyToken(token: string): Promise<boolean> {
     try {
-      const response = await fetch(`${this.baseUrl}/verify-token`, {
+      const response = await fetch(`${mongoAuthService.baseUrl}/verify-token`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -142,24 +143,24 @@ class MongoAuthService {
       console.error('Token verification error:', error);
       return false;
     }
-  }
+  },
 
   /**
    * Check if user is authenticated
    */
   isAuthenticated(): boolean {
-    const token = this.getToken();
-    const user = this.getCurrentUser();
+    const token = mongoAuthService.getToken();
+    const user = mongoAuthService.getCurrentUser();
     return !!(token && user);
-  }
+  },
 
   /**
    * Update user profile
    */
   async updateProfile(userId: string, updateData: Partial<User>): Promise<{ success: boolean; user: User; message: string }> {
     try {
-      const token = this.getToken();
-      const response = await fetch(`${this.baseUrl}/profile/${userId}`, {
+      const token = mongoAuthService.getToken();
+      const response = await fetch(`${mongoAuthService.baseUrl}/profile/${userId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -176,22 +177,22 @@ class MongoAuthService {
       const data = await response.json();
 
       // Update stored user data
-      localStorage.setItem(this.userKey, JSON.stringify(data.user));
+      localStorage.setItem(mongoAuthService.userKey, JSON.stringify(data.user));
 
       return data;
     } catch (error) {
       console.error('Profile update error:', error);
       throw error;
     }
-  }
+  },
 
   /**
    * Change password
    */
   async changePassword(userId: string, currentPassword: string, newPassword: string): Promise<{ success: boolean; message: string }> {
     try {
-      const token = this.getToken();
-      const response = await fetch(`${this.baseUrl}/change-password`, {
+      const token = mongoAuthService.getToken();
+      const response = await fetch(`${mongoAuthService.baseUrl}/change-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -210,7 +211,7 @@ class MongoAuthService {
       console.error('Password change error:', error);
       throw error;
     }
-  }
-}
+  },
+};
 
-export const mongoAuthService = new MongoAuthService();
+export { mongoAuthService };

@@ -39,13 +39,13 @@ const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
+  const [agreeTerms, setAgreeTerms] = useState(false);
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
   
   const { ref: headerRef, inView: headerInView } = useInView({ 
     threshold: 0.1, 
     triggerOnce: true 
   });
-
-  // Note: Removed automatic redirect to allow access even when logged in
 
   // Password validation
   const passwordRequirements = {
@@ -59,18 +59,49 @@ const Signup = () => {
   const isPasswordValid = Object.values(passwordRequirements).every(Boolean);
   const passwordsMatch = password === confirmPassword && password.length > 0;
 
+  // Form validation
+  const validateForm = (): boolean => {
+    const newErrors: { [key: string]: string } = {};
+    
+    if (!fullName.trim()) {
+      newErrors.fullName = 'Full name is required';
+    } else if (fullName.length < 2) {
+      newErrors.fullName = 'Full name must be at least 2 characters';
+    }
+    
+    if (!email) {
+      newErrors.email = 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newErrors.email = 'Please enter a valid email';
+    }
+    
+    if (!password) {
+      newErrors.password = 'Password is required';
+    } else if (!isPasswordValid) {
+      newErrors.password = 'Password does not meet all requirements';
+    }
+    
+    if (!confirmPassword) {
+      newErrors.confirmPassword = 'Please confirm your password';
+    } else if (!passwordsMatch) {
+      newErrors.confirmPassword = 'Passwords do not match';
+    }
+    
+    if (!agreeTerms) {
+      newErrors.terms = 'You must agree to the terms and conditions';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const { signup } = useAuth();
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!isPasswordValid) {
-      toast.error('Please ensure password meets all requirements');
-      return;
-    }
-
-    if (!passwordsMatch) {
-      toast.error('Passwords do not match');
+    if (!validateForm()) {
+      toast.error('Please fix the errors and try again.');
       return;
     }
 
@@ -85,6 +116,7 @@ const Signup = () => {
       
       if (error instanceof Error) {
         if (error.message.includes('already exists')) {
+          setErrors({ email: 'User with this email already exists' });
           toast.error('User with this email or username already exists');
         } else if (error.message.includes('fetch') || error.message.includes('Failed to fetch')) {
           toast.error('Unable to connect to authentication service. Please ensure MongoDB and the backend server are running.');
@@ -602,7 +634,54 @@ const Signup = () => {
                         </AnimatePresence>
                       </motion.div>
 
-                      {/* Submit Button */}
+                      {/* Error Display */}
+                      <AnimatePresence>
+                        {Object.values(errors).length > 0 && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            className="p-3 bg-red-50 border border-red-200 rounded-md"
+                          >
+                            <ul className="text-sm text-red-700 space-y-1">
+                              {Object.values(errors).map((error, idx) => (
+                                <li key={idx}>• {error}</li>
+                              ))}
+                            </ul>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+
+                      {/* Terms and Conditions */}
+                      <motion.label 
+                        className="flex items-start gap-3 p-3 bg-muted/30 rounded-md cursor-pointer hover:bg-muted/50 transition-colors"
+                        whileHover={{ scale: 1.01 }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={agreeTerms}
+                          onChange={(e) => setAgreeTerms(e.target.checked)}
+                          disabled={loading}
+                          className="w-4 h-4 mt-0.5 rounded border-2 border-border transition-colors cursor-pointer"
+                        />
+                        <span className="text-sm text-muted-foreground">
+                          I agree to the <motion.a
+                            href="#"
+                            onClick={(e) => { e.preventDefault(); toast.info('Terms of Service'); }}
+                            className="text-primary hover:underline"
+                            whileHover={{ color: "var(--primary)" }}
+                          >
+                            Terms of Service
+                          </motion.a> and <motion.a
+                            href="#"
+                            onClick={(e) => { e.preventDefault(); toast.info('Privacy Policy'); }}
+                            className="text-primary hover:underline"
+                            whileHover={{ color: "var(--primary)" }}
+                          >
+                            Privacy Policy
+                          </motion.a>
+                        </span>
+                      </motion.label>
                       <motion.div
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}

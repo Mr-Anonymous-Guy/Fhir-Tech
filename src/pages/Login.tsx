@@ -34,19 +34,61 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
+  const [rememberMe, setRememberMe] = useState(false);
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
   
   const { ref: headerRef, inView: headerInView } = useInView({ 
     threshold: 0.1, 
     triggerOnce: true 
   });
 
-  // Note: Removed automatic redirect to allow access even when logged in
+  // Load remembered email on mount
+  useEffect(() => {
+    const savedEmail = localStorage.getItem('remembered-email');
+    if (savedEmail) {
+      setEmail(savedEmail);
+      setRememberMe(true);
+    }
+  }, []);
+
+  // Validation
+  const validateForm = (): boolean => {
+    const newErrors: { email?: string; password?: string } = {};
+    
+    if (!email) {
+      newErrors.email = 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newErrors.email = 'Please enter a valid email';
+    }
+    
+    if (!password) {
+      newErrors.password = 'Password is required';
+    } else if (password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      toast.error('Please fix the errors and try again.');
+      return;
+    }
+
     setLoading(true);
 
     try {
+      // Remember email if checked
+      if (rememberMe) {
+        localStorage.setItem('remembered-email', email);
+      } else {
+        localStorage.removeItem('remembered-email');
+      }
+
       await login(email, password);
       toast.success('Welcome back! Logging you in...');
       navigate('/app');
@@ -56,6 +98,7 @@ const Login = () => {
       if (error instanceof Error) {
         if (error.message.includes('Invalid email or password')) {
           toast.error('Invalid email or password. Please check your credentials.');
+          setErrors({ password: 'Invalid credentials' });
         } else if (error.message.includes('fetch') || error.message.includes('Failed to fetch')) {
           toast.error('Unable to connect to authentication service. Please ensure MongoDB and the backend server are running.');
         } else {
@@ -67,6 +110,15 @@ const Login = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleForgotPassword = () => {
+    if (!email) {
+      toast.error('Please enter your email address');
+      return;
+    }
+    toast.info('Password reset link will be sent to ' + email, { duration: 3000 });
+    // TODO: Implement password reset functionality
   };
 
   const handleDemoMode = () => {
@@ -427,7 +479,49 @@ const Login = () => {
                         </div>
                       </motion.div>
 
-                      {/* Submit Button */}
+                      {/* Error Messages */}
+                      {errors.email && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-700"
+                        >
+                          {errors.email}
+                        </motion.div>
+                      )}
+                      {errors.password && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-700"
+                        >
+                          {errors.password}
+                        </motion.div>
+                      )}
+
+                      {/* Remember Me & Forgot Password */}
+                      <div className="flex items-center justify-between text-sm">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={rememberMe}
+                            onChange={(e) => setRememberMe(e.target.checked)}
+                            disabled={loading}
+                            className="w-4 h-4 rounded border-2 border-border transition-colors cursor-pointer"
+                          />
+                          <span className="text-muted-foreground hover:text-foreground transition-colors">
+                            Remember me
+                          </span>
+                        </label>
+                        <motion.button
+                          type="button"
+                          onClick={handleForgotPassword}
+                          className="text-primary hover:text-primary/80 transition-colors font-medium"
+                          whileHover={{ x: 2 }}
+                        >
+                          Forgot password?
+                        </motion.button>
+                      </div>
                       <motion.div
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}

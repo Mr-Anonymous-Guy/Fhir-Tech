@@ -32,7 +32,7 @@ class MongoDbApiService {
   // Helper method for API requests
   private async apiRequest(endpoint: string, options: RequestInit = {}) {
     const url = `${this.baseUrl}${endpoint}`;
-    
+
     const defaultOptions: RequestInit = {
       headers: {
         'Content-Type': 'application/json',
@@ -41,7 +41,7 @@ class MongoDbApiService {
 
     try {
       const response = await fetch(url, { ...defaultOptions, ...options });
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         let errorData;
@@ -92,11 +92,12 @@ class MongoDbApiService {
   }
 
   async searchMappings(
-    query: string, 
+    query: string,
     filters: MappingFilters = {},
-    page: number = 1, 
+    page: number = 1,
     limit: number = 20
   ): Promise<{ mappings: NAMASTEMapping[]; total: number }> {
+    // Don't check isAvailable - try the API call directly
     const params = new URLSearchParams({
       q: query,
       page: page.toString(),
@@ -115,11 +116,33 @@ class MongoDbApiService {
     };
   }
 
+  async getAllMappings(
+    filters: MappingFilters = {},
+    page: number = 1,
+    limit: number = 20
+  ): Promise<{ mappings: NAMASTEMapping[]; total: number }> {
+    // Don't check isAvailable - try the API call directly
+    // If it fails, the caller will catch it and fall back
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString()
+    });
+
+    if (filters.category) params.append('category', filters.category);
+    if (filters.chapter) params.append('chapter', filters.chapter);
+
+    const result = await this.apiRequest(`/mappings?${params.toString()}`);
+    return {
+      mappings: result.mappings,
+      total: result.total
+    };
+  }
+
   async getMappingByCode(code: string): Promise<NAMASTEMapping | null> {
     try {
       return await this.apiRequest(`/mappings/${encodeURIComponent(code)}`);
-    } catch (error) {
-      if (error.message.includes('404')) {
+    } catch (error: any) {
+      if (error?.message?.includes('404')) {
         return null;
       }
       throw error;

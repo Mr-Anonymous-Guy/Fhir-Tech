@@ -10,6 +10,7 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const database = require('./database');
 const authService = require('./services/authService');
+const { MAPPINGS, AUDIT_LOGS } = require('./seed-data');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -58,8 +59,8 @@ app.use((req, res, next) => {
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'healthy', 
+  res.json({
+    status: 'healthy',
     timestamp: new Date().toISOString(),
     database: database.isConnected
   });
@@ -69,11 +70,11 @@ app.get('/health', (req, res) => {
 app.post('/api/auth/register', async (req, res) => {
   try {
     const { email, password, username, fullName } = req.body;
-    
+
     if (!email || !password) {
       return res.status(400).json({ error: 'Email and password are required' });
     }
-    
+
     const result = await authService.register({ email, password, username, fullName });
     res.json(result);
   } catch (error) {
@@ -85,11 +86,11 @@ app.post('/api/auth/register', async (req, res) => {
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body;
-    
+
     if (!email || !password) {
       return res.status(400).json({ error: 'Email and password are required' });
     }
-    
+
     const result = await authService.login(email, password);
     res.json(result);
   } catch (error) {
@@ -101,11 +102,11 @@ app.post('/api/auth/login', async (req, res) => {
 app.post('/api/auth/verify-token', async (req, res) => {
   try {
     const token = req.headers.authorization?.replace('Bearer ', '');
-    
+
     if (!token) {
       return res.status(401).json({ error: 'No token provided' });
     }
-    
+
     const decoded = await authService.verifyToken(token);
     res.json({ valid: true, user: decoded });
   } catch (error) {
@@ -137,11 +138,11 @@ app.put('/api/auth/profile/:id', async (req, res) => {
 app.post('/api/auth/change-password', async (req, res) => {
   try {
     const { userId, currentPassword, newPassword } = req.body;
-    
+
     if (!userId || !currentPassword || !newPassword) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
-    
+
     const result = await authService.changePassword(userId, currentPassword, newPassword);
     res.json(result);
   } catch (error) {
@@ -151,10 +152,32 @@ app.post('/api/auth/change-password', async (req, res) => {
 });
 
 // Mappings endpoints
+app.get('/api/mappings', async (req, res) => {
+  try {
+    const { category, chapter, page = 1, limit = 20 } = req.query;
+
+    const filters = {};
+    if (category) filters.category = category;
+    if (chapter) filters.chapter = chapter;
+
+    const result = await database.searchMappings(
+      '',
+      filters,
+      parseInt(page),
+      parseInt(limit)
+    );
+
+    res.json(result);
+  } catch (error) {
+    console.error('Get mappings error:', error);
+    res.status(500).json({ error: 'Failed to get mappings' });
+  }
+});
+
 app.get('/api/mappings/search', async (req, res) => {
   try {
     const { q: query = '', category, chapter, minConfidence, maxConfidence, page = 1, limit = 20 } = req.query;
-    
+
     const filters = {};
     if (category) filters.category = category;
     if (chapter) filters.chapter = chapter;
@@ -162,9 +185,9 @@ app.get('/api/mappings/search', async (req, res) => {
     if (maxConfidence) filters.maxConfidence = parseFloat(maxConfidence);
 
     const result = await database.searchMappings(
-      query, 
-      filters, 
-      parseInt(page), 
+      query,
+      filters,
+      parseInt(page),
       parseInt(limit)
     );
 
@@ -192,10 +215,10 @@ app.post('/api/mappings', async (req, res) => {
   try {
     const mappings = Array.isArray(req.body) ? req.body : [req.body];
     const result = await database.insertMappings(mappings);
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       insertedCount: result.insertedCount,
-      insertedIds: result.insertedIds 
+      insertedIds: result.insertedIds
     });
   } catch (error) {
     console.error('Insert mappings error:', error);
@@ -257,7 +280,7 @@ app.post('/api/audit', async (req, res) => {
 app.get('/api/audit', async (req, res) => {
   try {
     const { action, userId, success, startDate, endDate, page = 1, limit = 50 } = req.query;
-    
+
     const filters = {};
     if (action) filters.action = action;
     if (userId) filters.userId = userId;
@@ -322,7 +345,7 @@ app.get('/api/profile/notifications', async (req, res) => {
     const { userId, unread, page = 1, limit = 20 } = req.query;
     const filters = { userId };
     if (unread === 'true') filters.read = false;
-    
+
     const notifications = await database.getNotifications(filters, parseInt(page), parseInt(limit));
     res.json(notifications);
   } catch (error) {
@@ -356,10 +379,10 @@ app.get('/api/profile/data/export', async (req, res) => {
   try {
     const { format = 'json', userId } = req.query;
     const data = await database.exportUserData(userId, format);
-    
+
     const filename = `namaste-sync-export-${new Date().toISOString().split('T')[0]}.${format}`;
     const contentType = format === 'json' ? 'application/json' : 'text/csv';
-    
+
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.setHeader('Content-Type', contentType);
     res.send(data);
@@ -428,16 +451,19 @@ async function startServer() {
   try {
     // Connect to MongoDB
     await database.connect();
-    
-    // Initialize with sample data if empty
+
+    // Initialize with sample data - ALWAYS reinitialize to ensure fresh data
     try {
-      const stats = await database.getMappingStats();
-      if (stats.totalMappings === 0) {
-        console.log('📥 Initializing database with sample data...');
-        await initializeSampleData();
-      }
+      console.log('🔍 Reinitializing database with fresh seed data...');
+      await initializeSampleData();
     } catch (error) {
-      console.warn('⚠️ Could not check mapping stats, continuing startup:', error.message);
+      console.warn('⚠️ Could not check mapping stats:', error.message);
+      console.log('📥 Attempting to initialize sample data anyway...');
+      try {
+        await initializeSampleData();
+      } catch (initError) {
+        console.warn('⚠️ Could not initialize sample data:', initError.message);
+      }
     }
 
     // Start server
@@ -455,64 +481,40 @@ async function startServer() {
 
 // Initialize sample data
 async function initializeSampleData() {
-  const sampleMappings = [
-    {
-      namaste_code: 'AYU-001',
-      namaste_term: 'Kasa (Cough)',
-      category: 'Ayurveda',
-      chapter_name: 'Respiratory System Disorders',
-      icd11_tm2_code: 'XF78172',
-      icd11_tm2_description: 'Traditional cough disorder',
-      icd11_biomedicine_code: 'BB498',
-      confidence_score: 0.95
-    },
-    {
-      namaste_code: 'AYU-002',
-      namaste_term: 'Amlapitta (Hyperacidity)',
-      category: 'Ayurveda',
-      chapter_name: 'Digestive System Disorders',
-      icd11_tm2_code: 'XB20847',
-      icd11_tm2_description: 'Traditional digestive disorder',
-      icd11_biomedicine_code: 'BB769',
-      confidence_score: 0.92
-    },
-    {
-      namaste_code: 'AYU-003',
-      namaste_term: 'Madhumeha (Diabetes)',
-      category: 'Ayurveda',
-      chapter_name: 'Endocrine and Metabolic Disorders',
-      icd11_tm2_code: 'XE94567',
-      icd11_tm2_description: 'Traditional diabetes disorder',
-      icd11_biomedicine_code: 'BC123',
-      confidence_score: 0.98
-    },
-    {
-      namaste_code: 'SID-001',
-      namaste_term: 'Vayu Gunmam (Joint Pain)',
-      category: 'Siddha',
-      chapter_name: 'Musculoskeletal Disorders',
-      icd11_tm2_code: 'XF89234',
-      icd11_tm2_description: 'Traditional joint disorder',
-      icd11_biomedicine_code: 'BD234',
-      confidence_score: 0.88
-    },
-    {
-      namaste_code: 'UNA-001',
-      namaste_term: 'Nazla (Common Cold)',
-      category: 'Unani',
-      chapter_name: 'Respiratory System Disorders',
-      icd11_tm2_code: 'XF67892',
-      icd11_tm2_description: 'Traditional cold disorder',
-      icd11_biomedicine_code: 'BB123',
-      confidence_score: 0.90
-    }
-  ];
-
+  console.log('\n==========================================');
+  console.log('📊 DATABASE INITIALIZATION');
+  console.log('==========================================\n');
+  
   try {
-    await database.insertMappings(sampleMappings);
-    console.log(`✅ Initialized database with ${sampleMappings.length} sample mappings`);
+    console.log('🔍 Clearing old data...');
+    await database.clearMappings();
+    await database.clearAuditLogs();
+    console.log('✅ Old data cleared');
+    
+    console.log('\n📥 Inserting 15 sample mappings...');
+    await database.insertMappings(MAPPINGS);
+    console.log(`✅ Successfully inserted ${MAPPINGS.length} mappings`);
+    
+    console.log('\n📥 Inserting sample audit logs...');
+    for (const entry of AUDIT_LOGS) {
+      await database.insertAuditEntry(entry);
+    }
+    console.log(`✅ Successfully inserted ${AUDIT_LOGS.length} audit entries`);
+    
+    // Verify the data was inserted
+    console.log('\n✔️  Verifying data...');
+    const stats = await database.getMappingStats();
+    console.log(`✔️  Database now contains ${stats.totalMappings} mappings`);
+    console.log(`✔️  Average confidence score: ${(stats.avgConfidenceScore * 100).toFixed(1)}%`);
+    
+    const categories = await database.getCategories();
+    console.log(`✔️  Categories: ${categories.join(', ')}`);
+    
+    console.log('\n✅ DATABASE INITIALIZATION COMPLETE');
+    console.log('==========================================\n');
   } catch (error) {
-    console.error('⚠️ Failed to initialize sample data:', error.message);
+    console.error('\n❌ INITIALIZATION FAILED:', error.message);
+    console.error('Stack:', error.stack);
   }
 }
 

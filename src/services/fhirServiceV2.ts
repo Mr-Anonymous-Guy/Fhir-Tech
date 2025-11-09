@@ -45,35 +45,40 @@ class EnhancedFHIRService {
   private async initialize() {
     // Prevent multiple concurrent initializations
     if (this.isInitialized) {
+      console.log('✅ EnhancedFHIRService: Already initialized, mode:', this.useBrowserFallback ? 'BROWSER' : 'MONGODB');
       return;
     }
 
+    console.log('🔄 EnhancedFHIRService: Starting initialization...');
+    
+    // FORCE MongoDB API - don't use browser fallback
+    this.useBrowserFallback = false;
+    
     try {
-      console.log('EnhancedFHIRService: Starting initialization...');
-      // Try to connect to MongoDB API first
+      // Test MongoDB API connection
+      console.log('🔌 Testing MongoDB API connection...');
+      const testUrl = `${dbService['baseUrl']}/health`;
+      console.log('Testing URL:', testUrl);
       await dbService.connect();
-
-      // Only check for data if the database service is actually available
-      if (dbService.isConnectedDb()) {
-        // Check if we need to seed initial data
+      console.log('✅ MongoDB API connected');
+      
+      // Test if API is actually working by trying to get stats
+      try {
         const stats = await dbService.getMappingStats();
-        if (stats.totalMappings === 0) {
-          console.log('EnhancedFHIRService: No existing data found, seeding initial data...');
-          await this.seedInitialData();
-        }
-
+        console.log(`📊 MongoDB API working! Found ${stats.totalMappings} mappings`);
         this.isInitialized = true;
         this.useBrowserFallback = false;
-        console.log('EnhancedFHIRService: Initialized successfully with MongoDB API');
-      } else {
-        // Fall back to browser-based storage
-        console.warn('EnhancedFHIRService: MongoDB API not available, falling back to browser database');
-        await this.initializeBrowserFallback();
+        console.log('✅ EnhancedFHIRService: Using MongoDB API');
+        return;
+      } catch (statsError) {
+        console.error('❌ MongoDB API stats failed:', statsError);
+        throw new Error('MongoDB API not responding');
       }
     } catch (error) {
-      console.warn('EnhancedFHIRService: Error during initialization, falling back to browser database:', error);
-      // Fall back to browser-based storage
+      console.error('❌ MongoDB API failed, using browser fallback:', error);
+      this.useBrowserFallback = true;
       await this.initializeBrowserFallback();
+      this.isInitialized = true;
     }
   }
 
@@ -575,16 +580,20 @@ class EnhancedFHIRService {
    */
   async lookup(query: string, page = 1, pageSize = 10): Promise<LookupResponse> {
     const startTime = Date.now();
+    console.log(`🔍 [lookup] Called with query: "${query}", page: ${page}, pageSize: ${pageSize}`);
 
     try {
       if (!this.isInitialized) {
+        console.log('🔄 [lookup] Not initialized, initializing...');
         await this.initialize();
       }
 
+      console.log(`📊 [lookup] Using ${this.useBrowserFallback ? 'BROWSER FALLBACK' : 'MONGODB API'}`);
       let searchResult;
       
       if (this.useBrowserFallback) {
         // Use browser-based search
+        console.log('🔍 [lookup] Searching browser storage...');
         const searchTerm = query.toLowerCase();
         const filteredMappings = this.browserMappings.filter(mapping => 
           mapping.namaste_term.toLowerCase().includes(searchTerm) ||
@@ -594,6 +603,7 @@ class EnhancedFHIRService {
           mapping.icd11_tm2_description.toLowerCase().includes(searchTerm)
         );
         
+        console.log(`✅ [lookup] Browser search found ${filteredMappings.length} results`);
         const total = filteredMappings.length;
         const startIndex = (page - 1) * pageSize;
         const endIndex = startIndex + pageSize;
@@ -605,14 +615,27 @@ class EnhancedFHIRService {
         };
       } else {
         // Use MongoDB API
-        searchResult = await dbService.searchMappings(query, {}, page, pageSize);
+        try {
+          console.log('🔌 [lookup] Calling MongoDB searchMappings...');
+          searchResult = await dbService.searchMappings(query, {}, page, pageSize);
+          console.log(`✅ [lookup] MongoDB returned ${searchResult.total} total results`);
+        } catch (error) {
+          console.error('❌ [lookup] MongoDB search failed:', error);
+          console.log('🔄 [lookup] Falling back to browser storage...');
+          this.useBrowserFallback = true;
+          await this.initializeBrowserFallback();
+          return this.lookup(query, page, pageSize); // Retry with browser
+        }
       }
+      
       // Transform to expected format
       const results: SearchResult[] = searchResult.mappings.map(mapping => ({
         namaste: mapping,
         highlights: [],
         relevanceScore: mapping.confidence_score
       }));
+
+      console.log(`✅ [lookup] Returning ${results.length} results out of ${searchResult.total} total`);
 
       // Log the search
       await this.logAuditEntry({
@@ -631,6 +654,7 @@ class EnhancedFHIRService {
         query
       };
     } catch (error) {
+      console.error('❌ [lookup] Fatal error:', error);
       await this.logAuditEntry({
         action: 'search',
         query,
@@ -759,20 +783,28 @@ class EnhancedFHIRService {
         pageSize
       };
     } else {
-      // Use MongoDB API
-      const mappingFilters: MappingFilters = {
-        category: filters.category as 'Ayurveda' | 'Siddha' | 'Unani' | undefined,
-        chapter: filters.chapter
-      };
+      // Use MongoDB API with fallback
+      try {
+        const mappingFilters: MappingFilters = {
+          category: filters.category as 'Ayurveda' | 'Siddha' | 'Unani' | undefined,
+          chapter: filters.chapter
+        };
 
-      const result = await dbService.searchMappings('', mappingFilters, page, pageSize);
-      
-      return {
-        mappings: result.mappings,
-        total: result.total,
-        page,
-        pageSize
-      };
+        const result = await dbService.getAllMappings(mappingFilters, page, pageSize);
+        
+        return {
+          mappings: result.mappings,
+          total: result.total,
+          page,
+          pageSize
+        };
+      } catch (error) {
+        console.warn('MongoDB API error, falling back to browser storage:', error);
+        // Switch to browser fallback and retry
+        this.useBrowserFallback = true;
+        await this.initializeBrowserFallback();
+        return this.getAllMappings(filters, page, pageSize);
+      }
     }
   }
 
@@ -813,21 +845,29 @@ class EnhancedFHIRService {
         pageSize
       };
     } else {
-      // Use MongoDB API
-      const auditFilters: AuditFilters = {
-        action: filters.action,
-        success: filters.success,
-        startDate: filters.startDate
-      };
+      // Use MongoDB API with fallback
+      try {
+        const auditFilters: AuditFilters = {
+          action: filters.action,
+          success: filters.success,
+          startDate: filters.startDate
+        };
 
-      const result = await dbService.getAuditLogs(auditFilters, page, pageSize);
-      
-      return {
-        entries: result.entries,
-        total: result.total,
-        page,
-        pageSize
-      };
+        const result = await dbService.getAuditLogs(auditFilters, page, pageSize);
+        
+        return {
+          entries: result.entries,
+          total: result.total,
+          page,
+          pageSize
+        };
+      } catch (error) {
+        console.warn('MongoDB API error, falling back to browser storage:', error);
+        // Switch to browser fallback and retry
+        this.useBrowserFallback = true;
+        await this.initializeBrowserFallback();
+        return this.getAuditLog(page, pageSize, filters);
+      }
     }
   }
 
@@ -846,13 +886,21 @@ class EnhancedFHIRService {
       
       return { categories, chapters };
     } else {
-      // Use MongoDB API
-      const [categories, chapters] = await Promise.all([
-        dbService.getCategories(),
-        dbService.getChapters()
-      ]);
+      // Use MongoDB API with fallback
+      try {
+        const [categories, chapters] = await Promise.all([
+          dbService.getCategories(),
+          dbService.getChapters()
+        ]);
 
-      return { categories, chapters };
+        return { categories, chapters };
+      } catch (error) {
+        console.warn('MongoDB API error, falling back to browser storage:', error);
+        // Switch to browser fallback and retry
+        this.useBrowserFallback = true;
+        await this.initializeBrowserFallback();
+        return this.getMetadata();
+      }
     }
   }
 

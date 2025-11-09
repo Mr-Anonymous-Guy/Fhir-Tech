@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { enhancedFhirService } from '@/services/fhirServiceV2';
 import { NAMASTEMapping, SearchResult } from '@/types/fhir';
 import { searchHistoryService, SearchHistoryItem } from '@/services/searchHistoryService';
@@ -36,28 +37,30 @@ const Search = () => {
       const history = searchHistoryService.getHistory('search');
       setSearchHistory(history);
     };
-    
+
     loadSearchHistory();
   }, []);
 
-  // Debounced search for suggestions and history
+  // Debounced search for live results
   useEffect(() => {
     if (query.length >= 2) {
       const timer = setTimeout(async () => {
         try {
-          // Get search suggestions from FHIR service
-          const response = await enhancedFhirService.lookup(query, 1, 5);
-          setSuggestions(response.results);
-          setShowSuggestions(true);
+          console.log('🔍 Live searching for:', query);
+          const response = await enhancedFhirService.lookup(query, 1, 10);
+          console.log('✅ Live search results:', response.results.length, 'found');
+          setResults(response.results);
+          setShowSuggestions(false);
           setShowHistory(false);
         } catch (error) {
-          console.error('Suggestion search failed:', error);
+          console.error('Live search failed:', error);
+          setResults([]);
         }
-      }, 300);
+      }, 500);
 
       return () => clearTimeout(timer);
     } else {
-      setSuggestions([]);
+      setResults([]);
       setShowSuggestions(false);
       // Show search history when input is empty but focused
       if (document.activeElement === searchInputRef.current) {
@@ -75,7 +78,7 @@ const Search = () => {
         !historyRef.current.contains(event.target as Node);
       const clickedOutsideInput = searchInputRef.current &&
         !searchInputRef.current.contains(event.target as Node);
-      
+
       if (clickedOutsideInput) {
         if (clickedOutsideSuggestions) {
           setShowSuggestions(false);
@@ -94,37 +97,13 @@ const Search = () => {
     const searchTerm = searchQuery || query;
     if (!searchTerm.trim()) return;
 
-    setLoading(true);
-    setShowSuggestions(false);
-    setShowHistory(false);
-    
-    try {
-      const response = await enhancedFhirService.lookup(searchTerm);
-      setResults(response.results);
-      
-      // Save successful search to history
-      searchHistoryService.addSearch(searchTerm, 'search', response.results.length);
-      
-      // Refresh search history state
-      const updatedHistory = searchHistoryService.getHistory('search');
-      setSearchHistory(updatedHistory);
-      
-      if (response.results.length === 0) {
-        toast({
-          title: 'No Results Found',
-          description: 'Try different search terms or browse all mappings.',
-          variant: 'destructive'
-        });
-      }
-    } catch (error) {
-      toast({
-        title: 'Search Failed',
-        description: 'Unable to perform search. Please try again.',
-        variant: 'destructive'
-      });
-    } finally {
-      setLoading(false);
-    }
+    console.log('🔍 Manual search for:', searchTerm);
+    // Save successful search to history
+    searchHistoryService.addSearch(searchTerm, 'search', results.length);
+
+    // Refresh search history state
+    const updatedHistory = searchHistoryService.getHistory('search');
+    setSearchHistory(updatedHistory);
   };
 
   const handleSuggestionClick = (suggestion: SearchResult) => {
@@ -321,13 +300,13 @@ const Search = () => {
                   onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                   onFocus={handleInputFocus}
                   className="pr-10"
-                  disabled={loading}
+                  disabled={false}
                 />
                 <SearchIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               </div>
-              <Button 
-                onClick={() => handleSearch()} 
-                disabled={loading || !query.trim()}
+              <Button
+                onClick={() => handleSearch()}
+                disabled={!query.trim()}
                 variant="medical"
               >
                 {loading ? <LoadingSpinner size="sm" /> : 'Search'}
@@ -439,7 +418,7 @@ const Search = () => {
           <h2 className="text-xl font-semibold text-foreground">
             Search Results ({results.length})
           </h2>
-          
+
           <div className="grid gap-4">
             {results.map((result, index) => (
               <Card key={index} className="shadow-card hover:shadow-medical transition-all">
@@ -459,7 +438,7 @@ const Search = () => {
                         <span>{result.namaste.chapter_name}</span>
                       </CardDescription>
                     </div>
-                    <Badge 
+                    <Badge
                       variant={result.namaste.confidence_score >= 0.9 ? 'default' : result.namaste.confidence_score >= 0.7 ? 'outline' : 'destructive'}
                       className="ml-4"
                     >
@@ -467,7 +446,7 @@ const Search = () => {
                     </Badge>
                   </div>
                 </CardHeader>
-                
+
                 <CardContent className="space-y-4">
                   {/* ICD-11 Mappings */}
                   <div className="grid md:grid-cols-2 gap-4">
@@ -482,7 +461,7 @@ const Search = () => {
                         {result.namaste.icd11_tm2_description}
                       </p>
                     </div>
-                    
+
                     <div className="p-3 bg-accent/10 rounded-lg">
                       <h4 className="font-medium text-sm text-primary mb-2">ICD-11 Biomedicine</h4>
                       <p className="text-sm">
@@ -511,7 +490,7 @@ const Search = () => {
                       <FileCode className="w-4 h-4 mr-2" />
                       Generate FHIR
                     </Button>
-                    
+
                     <Button
                       variant="success"
                       size="sm"
@@ -542,7 +521,7 @@ const Search = () => {
                 Clear Search
               </Button>
               <Button asChild variant="default">
-                <a href="/mappings">Browse All Mappings</a>
+                <Link to="/app/mappings">Browse All Mappings</Link>
               </Button>
             </div>
           </CardContent>
@@ -561,7 +540,7 @@ const Search = () => {
               Generated FHIR Condition resource for {selectedMapping?.namaste_term}
             </DialogDescription>
           </DialogHeader>
-          
+
           {fhirResource && (
             <div className="space-y-4">
               <div className="flex gap-2">
@@ -585,7 +564,7 @@ const Search = () => {
                   Send to EMR
                 </Button>
               </div>
-              
+
               <div className="bg-muted p-4 rounded-lg">
                 <pre className="text-xs overflow-x-auto whitespace-pre-wrap">
                   {JSON.stringify(fhirResource, null, 2)}

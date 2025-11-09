@@ -8,8 +8,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import LoadingSpinner from '@/components/LoadingSpinner';
-import { Download, Search, Filter, Database, History, Clock, X, Trash2 } from 'lucide-react';
+import { Download, Search, Filter, Database, History, Clock, X, Trash2, Eye } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface FiltersType {
@@ -23,14 +24,16 @@ const Mappings = () => {
   const [mappings, setMappings] = useState<NAMASTEMapping[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<FiltersType>({});
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(''); // Empty by default
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [categories, setCategories] = useState<string[]>([]);
   const [chapters, setChapters] = useState<string[]>([]);
   const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
   const [showHistory, setShowHistory] = useState(false);
-  
+  const [selectedMapping, setSelectedMapping] = useState<NAMASTEMapping | null>(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+
   const pageSize = 20;
   const searchInputRef = useRef<HTMLInputElement>(null);
   const historyRef = useRef<HTMLDivElement>(null);
@@ -42,18 +45,30 @@ const Mappings = () => {
   }, []);
 
   useEffect(() => {
-    loadMappings();
-    loadMetadata();
-  }, [page, filters]);
+    console.log('📍 Mappings page mounted, loading data...');
+    // Load all data on mount
+    const loadOnMount = async () => {
+      console.log('📚 [mount] Calling loadMappings()...');
+      await loadMappings();
+      console.log('📚 [mount] Calling loadMetadata()...');
+      await loadMetadata();
+    };
+    loadOnMount().catch(err => console.error('📚 [mount] Error:', err));
+  }, []);
 
-  // Handle clicks outside search history
+  // Load data when page or filters change
+  useEffect(() => {
+    console.log('🔄 useEffect triggered with page:', page, 'filters:', filters);
+    // Always load when page or filters change
+    loadMappings();
+  }, [page, filters]);
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const clickedOutsideHistory = historyRef.current &&
         !historyRef.current.contains(event.target as Node);
       const clickedOutsideInput = searchInputRef.current &&
         !searchInputRef.current.contains(event.target as Node);
-      
+
       if (clickedOutsideInput && clickedOutsideHistory) {
         setShowHistory(false);
       }
@@ -63,47 +78,72 @@ const Mappings = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Dynamic search with debouncing
+  // Dynamic search with debouncing - live search as user types
   useEffect(() => {
     if (searchQuery.length >= 2) {
       const timer = setTimeout(() => {
+        console.log('🔍 Live search triggered for:', searchQuery);
         setFilters(prev => ({ ...prev, search: searchQuery }));
         setPage(1);
       }, 300);
       return () => clearTimeout(timer);
-    } else if (searchQuery === '' && filters.search) {
-      setFilters(prev => ({ ...prev, search: undefined }));
+    } else if (searchQuery.length === 0 && filters.search) {
+      // Clear search immediately when input is cleared
+      console.log('🔍 Search cleared');
+      setFilters(prev => {
+        const newFilters = { ...prev };
+        delete newFilters.search;
+        return newFilters;
+      });
       setPage(1);
     }
   }, [searchQuery]);
 
   const loadMappings = async () => {
     setLoading(true);
+    console.log('🔍 [Mappings] Starting load with filters:', filters);
+
     try {
-      let response;
-      if (filters.search) {
-        // Use search API when there's a search query
-        const searchResponse = await enhancedFhirService.lookup(filters.search, page, pageSize);
-        response = {
-          mappings: searchResponse.results.map(result => result.namaste),
-          total: searchResponse.total
-        };
+      let response: any;
+
+      if (filters.search && filters.search.trim().length > 0) {
+        console.log('📝 [Mappings] Searching for:', filters.search);
+        try {
+          const searchResponse = await enhancedFhirService.lookup(filters.search, page, pageSize);
+          response = {
+            mappings: searchResponse.results.map((result: any) => result.namaste),
+            total: searchResponse.total
+          };
+          console.log('🔐 [Mappings] Search response:', response.total, 'results');
+        } catch (searchErr) {
+          console.error('❌ [Mappings] Search failed:', searchErr);
+          response = { mappings: [], total: 0 };
+        }
       } else {
-        // Use getAllMappings for filtering without search
-        const filterParams = {
-          category: filters.category,
-          chapter: filters.chapter
-        };
-        response = await enhancedFhirService.getAllMappings(filterParams, page, pageSize);
+        console.log('📚 [Mappings] Loading ALL mappings, no search filter');
+        try {
+          response = await enhancedFhirService.getAllMappings(
+            {
+              category: filters.category,
+              chapter: filters.chapter
+            },
+            page,
+            pageSize
+          );
+          console.log('🔐 [Mappings] Got', response.mappings.length, 'mappings, total:', response.total);
+        } catch (apiErr) {
+          console.error('❌ [Mappings] getAllMappings failed:', apiErr);
+          response = { mappings: [], total: 0 };
+        }
       }
-      setMappings(response.mappings);
-      setTotal(response.total);
-    } catch (error) {
-      toast({
-        title: 'Error Loading Mappings',
-        description: 'Failed to load terminology mappings.',
-        variant: 'destructive'
-      });
+
+      console.log('✅ [Mappings] Setting state with', response.mappings.length, 'mappings');
+      setMappings(response.mappings || []);
+      setTotal(response.total || 0);
+    } catch (error: any) {
+      console.error('❌ [Mappings] Unexpected error:', error);
+      setMappings([]);
+      setTotal(0);
     } finally {
       setLoading(false);
     }
@@ -120,17 +160,16 @@ const Mappings = () => {
   };
 
   const handleSearch = () => {
+    console.log('🔍 Manual search triggered for:', searchQuery);
     if (searchQuery.trim()) {
       // Save search to history
       searchHistoryService.addSearch(searchQuery.trim(), 'mapping');
-      
-      // Refresh search history state
       const updatedHistory = searchHistoryService.getHistory('mapping');
       setSearchHistory(updatedHistory);
+      // Trigger search by setting filter
+      setFilters(prev => ({ ...prev, search: searchQuery.trim() }));
+      setPage(1);
     }
-    
-    setFilters(prev => ({ ...prev, search: searchQuery }));
-    setPage(1);
     setShowHistory(false);
   };
 
@@ -143,10 +182,16 @@ const Mappings = () => {
   };
 
   const clearFilters = () => {
-    setFilters({});
+    console.log('🔎 Clearing all filters and search');
+    // Reset everything
     setSearchQuery('');
+    setFilters({});
     setPage(1);
     setShowHistory(false);
+    // Force reload of all mappings
+    setTimeout(() => {
+      console.log('🔎 Filters cleared, reloading all mappings');
+    }, 100);
   };
 
   const handleHistoryClick = (historyItem: SearchHistoryItem) => {
@@ -181,10 +226,10 @@ const Mappings = () => {
 
   const downloadMappings = () => {
     const csvHeader = 'namaste_code,namaste_term,category,chapter_name,icd11_tm2_code,icd11_tm2_description,icd11_biomedicine_code,confidence_score\n';
-    const csvData = mappings.map(mapping => 
+    const csvData = mappings.map(mapping =>
       `${mapping.namaste_code},${mapping.namaste_term},${mapping.category},${mapping.chapter_name},${mapping.icd11_tm2_code},${mapping.icd11_tm2_description},${mapping.icd11_biomedicine_code},${mapping.confidence_score}`
     ).join('\n');
-    
+
     const blob = new Blob([csvHeader + csvData], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -192,7 +237,7 @@ const Mappings = () => {
     a.download = 'namaste_icd11_mappings.csv';
     a.click();
     URL.revokeObjectURL(url);
-    
+
     toast({
       title: 'Download Started',
       description: 'Mappings are being downloaded as CSV.',
@@ -250,6 +295,7 @@ const Mappings = () => {
                       onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                       onFocus={handleInputFocus}
                       className="pr-10"
+                      disabled={false}
                     />
                     <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     {searchQuery && (
@@ -258,11 +304,11 @@ const Mappings = () => {
                       </div>
                     )}
                   </div>
-                  <Button onClick={handleSearch} size="sm">
+                  <Button onClick={handleSearch} size="sm" disabled={false}>
                     <Search className="w-4 h-4" />
                   </Button>
                 </div>
-                
+
                 {/* Search History Dropdown */}
                 {showHistory && searchHistory.length > 0 && (
                   <div
@@ -320,10 +366,14 @@ const Mappings = () => {
                 )}
               </div>
             </div>
-            
+
             <div className="space-y-2">
               <label className="text-sm font-medium">Category</label>
-              <Select onValueChange={(value) => handleFilterChange('category', value)}>
+              <Select
+                value={filters.category || 'all'}
+                onValueChange={(value) => handleFilterChange('category', value)}
+                disabled={false}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="All Categories" />
                 </SelectTrigger>
@@ -337,10 +387,14 @@ const Mappings = () => {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="space-y-2">
               <label className="text-sm font-medium">Chapter</label>
-              <Select onValueChange={(value) => handleFilterChange('chapter', value)}>
+              <Select
+                value={filters.chapter || 'all'}
+                onValueChange={(value) => handleFilterChange('chapter', value)}
+                disabled={false}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="All Chapters" />
                 </SelectTrigger>
@@ -354,10 +408,10 @@ const Mappings = () => {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="space-y-2">
               <label className="text-sm font-medium">Actions</label>
-              <Button onClick={clearFilters} variant="outline" className="w-full">
+              <Button onClick={clearFilters} variant="outline" className="w-full" disabled={false}>
                 Clear Filters
               </Button>
             </div>
@@ -383,6 +437,13 @@ const Mappings = () => {
             <div className="flex justify-center py-12">
               <LoadingSpinner size="lg" text="Loading mappings..." />
             </div>
+          ) : mappings.length === 0 ? (
+            <div className="text-center py-12">
+              <Database className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">No Mappings Found</h3>
+              <p className="text-muted-foreground mb-4">Try adjusting your filters or search terms</p>
+              <p className="text-xs text-muted-foreground">Total mappings: {total}</p>
+            </div>
           ) : (
             <div className="space-y-4">
               <div className="rounded-md border">
@@ -400,7 +461,10 @@ const Mappings = () => {
                   </TableHeader>
                   <TableBody>
                     {mappings.map((mapping, index) => (
-                      <TableRow key={index} className="hover:bg-muted/50">
+                      <TableRow key={index} className="hover:bg-muted/50 cursor-pointer" onClick={() => {
+                        setSelectedMapping(mapping);
+                        setShowDetailsModal(true);
+                      }}>
                         <TableCell className="font-medium">
                           {mapping.namaste_term}
                         </TableCell>
@@ -435,7 +499,7 @@ const Mappings = () => {
                   </TableBody>
                 </Table>
               </div>
-              
+
               {/* Pagination */}
               {totalPages > 1 && (
                 <div className="flex items-center justify-between">
@@ -469,6 +533,74 @@ const Mappings = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Details Modal */}
+      <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Eye className="w-5 h-5 text-primary" />
+              Mapping Details
+            </DialogTitle>
+            <DialogDescription>
+              Complete information for {selectedMapping?.namaste_term}
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedMapping && (
+            <div className="space-y-6">
+              {/* NAMASTE Information */}
+              <div className="space-y-2">
+                <h3 className="font-semibold text-lg text-primary">NAMASTE Term</h3>
+                <div className="p-4 bg-primary/5 rounded-lg">
+                  <p className="text-lg font-medium">{selectedMapping.namaste_term}</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Code: <code className="bg-primary/10 px-2 py-1 rounded">{selectedMapping.namaste_code}</code>
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Category: <Badge className="ml-2">{selectedMapping.category}</Badge>
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Chapter: <span className="font-medium ml-2">{selectedMapping.chapter_name}</span>
+                  </p>
+                </div>
+              </div>
+
+              {/* ICD-11 TM2 Mapping */}
+              <div className="space-y-2">
+                <h3 className="font-semibold text-lg">ICD-11 TM2 Mapping</h3>
+                <div className="p-4 bg-secondary/10 rounded-lg">
+                  <p className="font-medium text-sm">Code:</p>
+                  <code className="bg-secondary/20 px-2 py-1 rounded text-sm">{selectedMapping.icd11_tm2_code}</code>
+                  <p className="font-medium text-sm mt-3">Description:</p>
+                  <p className="text-sm text-muted-foreground">{selectedMapping.icd11_tm2_description}</p>
+                </div>
+              </div>
+
+              {/* ICD-11 Biomedicine Mapping */}
+              <div className="space-y-2">
+                <h3 className="font-semibold text-lg">ICD-11 Biomedicine Mapping</h3>
+                <div className="p-4 bg-accent/10 rounded-lg">
+                  <p className="font-medium text-sm">Code:</p>
+                  <code className="bg-accent/20 px-2 py-1 rounded text-sm">{selectedMapping.icd11_biomedicine_code}</code>
+                  <p className="font-medium text-sm mt-3">Confidence Score:</p>
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className={`text-lg font-bold ${getConfidenceColor(selectedMapping.confidence_score)}`}>
+                      {(selectedMapping.confidence_score * 100).toFixed(1)}%
+                    </span>
+                    <div className="w-32 h-2 bg-secondary rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-primary"
+                        style={{ width: `${selectedMapping.confidence_score * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

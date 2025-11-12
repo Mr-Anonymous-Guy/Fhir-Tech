@@ -94,6 +94,12 @@ const mongoAuthService = {
         throw new Error(error.error || 'Registration failed');
       }
 
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        const text = await response.text();
+        throw new Error(`Unexpected response format: ${text.slice(0, 100)}`);
+      }
+
       const result = await response.json();
       
       // Handle both response formats: { success, data: { user } } or { success, user }

@@ -24,30 +24,22 @@
       }
     }
   ],
-  "routes": [
+  "rewrites": [
     {
-      "src": "/api/(.*)",
-      "dest": "/api/$1"
+      "source": "/api/:path*",
+      "destination": "/api/:path*"
     },
     {
-      "src": "/assets/(.*)",
-      "dest": "/assets/$1"
+      "source": "/(.*\\.(js|css|png|jpg|jpeg|gif|svg|ico|txt|json|csv|map))",
+      "destination": "/$1"
     },
     {
-      "src": "/data/(.*)",
-      "dest": "/data/$1"
+      "source": "/data/:path*",
+      "destination": "/data/:path*"
     },
     {
-      "src": "/favicon\\.ico",
-      "dest": "/favicon.ico"
-    },
-    {
-      "src": "/robots\\.txt",
-      "dest": "/robots.txt"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }

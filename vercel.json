@@ -11,11 +11,17 @@
     },
     {
       "src": "api/**/*.js",
-      "use": "@vercel/node"
+      "use": "@vercel/node",
+      "config": {
+        "runtime": "nodejs18.x"
+      }
     },
     {
       "src": "api/**/*.ts",
-      "use": "@vercel/node"
+      "use": "@vercel/node",
+      "config": {
+        "runtime": "nodejs18.x"
+      }
     }
   ],
   "routes": [
@@ -34,14 +40,6 @@
     "VITE_SUPABASE_PUBLISHABLE_KEY": "@supabase_publishable_key",
     "VITE_SUPABASE_URL": "@supabase_url",
     "VITE_APP_ENV": "production"
-  },
-  "functions": {
-    "api/**/*.js": {
-      "runtime": "nodejs18.x"
-    },
-    "api/**/*.ts": {
-      "runtime": "nodejs18.x"
-    }
   },
   "rewrites": [
     {

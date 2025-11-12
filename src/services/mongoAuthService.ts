@@ -54,7 +54,6 @@ const resolveBaseUrl = () => {
 
 // Create service object without class instantiation
 const mongoAuthService = {
-  baseUrl: resolveBaseUrl(),
   tokenKey: 'namaste-auth-token',
   userKey: 'namaste-auth-user',
 
@@ -63,7 +62,11 @@ const mongoAuthService = {
    */
   async register(email: string, password: string, fullName: string = ''): Promise<RegisterResponse> {
     try {
-      const response = await fetch(`${mongoAuthService.baseUrl}/register`, {
+      const baseUrl = resolveBaseUrl();
+      const [firstName, ...lastNameParts] = fullName.split(' ');
+      const lastName = lastNameParts.join(' ') || '';
+      
+      const response = await fetch(`${baseUrl}/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -71,8 +74,8 @@ const mongoAuthService = {
         body: JSON.stringify({
           email,
           password,
-          fullName,
-          username: email.split('@')[0],
+          firstName: firstName || email.split('@')[0],
+          lastName: lastName,
         }),
       });
 
@@ -81,7 +84,15 @@ const mongoAuthService = {
         throw new Error(error.error || 'Registration failed');
       }
 
-      const data = await response.json();
+      const result = await response.json();
+      
+      // Handle both response formats: { success, data: { user } } or { success, user }
+      const data = result.data ? {
+        success: result.success,
+        user: result.data.user,
+        message: result.data.message || 'Registration successful'
+      } : result;
+      
       return data;
     } catch (error) {
       console.error('Registration error:', error);
@@ -94,7 +105,8 @@ const mongoAuthService = {
    */
   async login(email: string, password: string): Promise<LoginResponse> {
     try {
-      const response = await fetch(`${mongoAuthService.baseUrl}/login`, {
+      const baseUrl = resolveBaseUrl();
+      const response = await fetch(`${baseUrl}/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -107,15 +119,32 @@ const mongoAuthService = {
         throw new Error(error.error || 'Login failed');
       }
 
-      const data: LoginResponse = await response.json();
+      const result = await response.json();
+      console.log('Login API response:', result);
+      
+      // Handle both response formats: { success, data: { user, token } } or { success, user, token }
+      const data = result.data ? {
+        success: result.success,
+        user: result.data.user,
+        token: result.data.token,
+        message: result.data.message || 'Login successful'
+      } : result;
 
       // Store token and user data
-      localStorage.setItem(mongoAuthService.tokenKey, data.token);
-      localStorage.setItem(mongoAuthService.userKey, JSON.stringify(data.user));
+      if (data.token) {
+        localStorage.setItem(mongoAuthService.tokenKey, data.token);
+      }
+      if (data.user) {
+        localStorage.setItem(mongoAuthService.userKey, JSON.stringify(data.user));
+      }
 
       return data;
     } catch (error) {
       console.error('Login error:', error);
+      console.error('Login error details:', {
+        message: error instanceof Error ? error.message : String(error),
+        baseUrl: resolveBaseUrl()
+      });
       throw error;
     }
   },
@@ -154,7 +183,8 @@ const mongoAuthService = {
    */
   async verifyToken(token: string): Promise<boolean> {
     try {
-      const response = await fetch(`${mongoAuthService.baseUrl}/verify-token`, {
+      const baseUrl = resolveBaseUrl();
+      const response = await fetch(`${baseUrl}/verify-token`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -183,8 +213,9 @@ const mongoAuthService = {
    */
   async updateProfile(userId: string, updateData: Partial<User>): Promise<{ success: boolean; user: User; message: string }> {
     try {
+      const baseUrl = resolveBaseUrl();
       const token = mongoAuthService.getToken();
-      const response = await fetch(`${mongoAuthService.baseUrl}/profile/${userId}`, {
+      const response = await fetch(`${baseUrl}/profile/${userId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -215,8 +246,9 @@ const mongoAuthService = {
    */
   async changePassword(userId: string, currentPassword: string, newPassword: string): Promise<{ success: boolean; message: string }> {
     try {
+      const baseUrl = resolveBaseUrl();
       const token = mongoAuthService.getToken();
-      const response = await fetch(`${mongoAuthService.baseUrl}/change-password`, {
+      const response = await fetch(`${baseUrl}/change-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

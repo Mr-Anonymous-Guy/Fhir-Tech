@@ -4,6 +4,8 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+packageExtensionsChecksum: sha256-N+F5mqDtve8OceG4E7IC7y7gPIJm8m6ELd541GIB6Jw=
+
 importers:
 
   .:
@@ -7527,6 +7529,7 @@ snapshots:
   rollup@4.53.0:
     dependencies:
       '@types/estree': 1.0.8
+      patch-package: 8.0.1
     optionalDependencies:
       '@rollup/rollup-android-arm-eabi': 4.53.0
       '@rollup/rollup-android-arm64': 4.53.0

@@ -29,6 +29,7 @@ interface RegisterResponse {
 }
 
 const resolveBaseUrl = () => {
+  // Check for environment variable, but ignore placeholder values
   const envBase =
     (import.meta as any)?.env?.VITE_API_BASE_URL ||
     (typeof process !== "undefined" ? (process as any)?.env?.VITE_API_BASE_URL : "");
@@ -38,10 +39,18 @@ const resolveBaseUrl = () => {
       ? envBase.replace(/\/$/, "")
       : "";
 
-  if (normalizedEnvBase) {
+  // Ignore placeholder values like "api.yourdomain.com" or "@api_base_url"
+  const isPlaceholder = normalizedEnvBase && (
+    normalizedEnvBase.includes("yourdomain.com") ||
+    normalizedEnvBase.includes("@api") ||
+    normalizedEnvBase.startsWith("@")
+  );
+
+  if (normalizedEnvBase && !isPlaceholder) {
     return `${normalizedEnvBase}/api/auth`;
   }
 
+  // In browser, check if we're on localhost
   if (typeof window !== "undefined") {
     const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
     if (isLocalhost) {
@@ -49,6 +58,7 @@ const resolveBaseUrl = () => {
     }
   }
 
+  // Default to relative path for Vercel deployment
   return "/api/auth";
 };
 

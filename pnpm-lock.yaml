@@ -143,6 +143,9 @@ importers:
       next-themes:
         specifier: ^0.3.0
         version: 0.3.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      patch-package:
+        specifier: ^8.0.1
+        version: 8.0.1
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -228,9 +231,6 @@ importers:
       globals:
         specifier: ^15.15.0
         version: 15.15.0
-      patch-package:
-        specifier: ^8.0.1
-        version: 8.0.1
       postcss:
         specifier: ^8.5.6
         version: 8.5.6

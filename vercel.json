@@ -24,21 +24,14 @@
       }
     }
   ],
-  "env": {
-    "VITE_API_BASE_URL": "@api_base_url",
-    "VITE_SUPABASE_PROJECT_ID": "@supabase_project_id",
-    "VITE_SUPABASE_PUBLISHABLE_KEY": "@supabase_publishable_key",
-    "VITE_SUPABASE_URL": "@supabase_url",
-    "VITE_APP_ENV": "production"
-  },
-  "rewrites": [
+  "routes": [
     {
-      "source": "/api/:path*",
-      "destination": "/api/:path*"
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
     },
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 }

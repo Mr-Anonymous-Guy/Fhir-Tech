@@ -1,16 +1,29 @@
 {
   "version": 2,
   "name": "namaste-sync",
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "functions": {
-    "api/**/*.js": {
-      "runtime": "nodejs18.x"
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
     },
-    "api/**/*.ts": {
-      "runtime": "nodejs18.x"
+    {
+      "src": "api/**/*.js",
+      "use": "@vercel/node",
+      "config": {
+        "runtime": "nodejs18.x"
+      }
+    },
+    {
+      "src": "api/**/*.ts",
+      "use": "@vercel/node",
+      "config": {
+        "runtime": "nodejs18.x"
+      }
     }
-  },
+  ],
   "routes": [
     {
       "src": "/api/(.*)",

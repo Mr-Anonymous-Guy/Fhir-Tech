@@ -28,9 +28,33 @@ interface RegisterResponse {
   message: string;
 }
 
+const resolveBaseUrl = () => {
+  const envBase =
+    (import.meta as any)?.env?.VITE_API_BASE_URL ||
+    (typeof process !== "undefined" ? (process as any)?.env?.VITE_API_BASE_URL : "");
+
+  const normalizedEnvBase =
+    typeof envBase === "string" && envBase.length > 0
+      ? envBase.replace(/\/$/, "")
+      : "";
+
+  if (normalizedEnvBase) {
+    return `${normalizedEnvBase}/api/auth`;
+  }
+
+  if (typeof window !== "undefined") {
+    const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+    if (isLocalhost) {
+      return "http://localhost:3001/api/auth";
+    }
+  }
+
+  return "/api/auth";
+};
+
 // Create service object without class instantiation
 const mongoAuthService = {
-  baseUrl: 'http://localhost:3001/api/auth',
+  baseUrl: resolveBaseUrl(),
   tokenKey: 'namaste-auth-token',
   userKey: 'namaste-auth-user',
 

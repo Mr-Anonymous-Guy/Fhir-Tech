@@ -22,7 +22,31 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { email, password, firstName, lastName } = req.body;
+    let body = req.body;
+
+    if (!body) {
+      body = await new Promise((resolve, reject) => {
+        let raw = '';
+        req.on('data', chunk => {
+          raw += chunk;
+        });
+        req.on('end', () => {
+          try {
+            resolve(raw ? JSON.parse(raw) : {});
+          } catch (parseError) {
+            reject(parseError);
+          }
+        });
+        req.on('error', reject);
+      });
+    }
+
+    if (typeof body === 'string') {
+      body = body.trim();
+      body = body ? JSON.parse(body) : {};
+    }
+
+    const { email, password, firstName, lastName } = body || {};
 
     // Validation
     if (!email || !password || !firstName || !lastName) {

@@ -9,11 +9,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Loader2, Play } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 
 export default function Auth() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, login: authLogin, signup: authSignup } = useAuth();
   const { enterDemoMode } = useDemo();
   const [loading, setLoading] = useState(false);
   const [loginEmail, setLoginEmail] = useState("");
@@ -33,16 +32,11 @@ export default function Auth() {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: loginEmail,
-        password: loginPassword,
-      });
-
-      if (error) throw error;
-
+      await authLogin(loginEmail, loginPassword);
       toast.success("Logged in successfully!");
       navigate("/app");
     } catch (error: any) {
+      console.error('Login error:', error);
       toast.error(error.message || "Failed to login");
     } finally {
       setLoading(false);
@@ -54,24 +48,11 @@ export default function Auth() {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signUp({
-        email: signupEmail,
-        password: signupPassword,
-        options: {
-          data: {
-            full_name: signupFullName,
-          },
-          emailRedirectTo: `${window.location.origin}/app`,
-        },
-      });
-
-      if (error) throw error;
-
-      toast.success("Account created successfully! You can now login.");
-      // Switch to login tab
-      const loginTab = document.querySelector('[value="login"]') as HTMLElement;
-      loginTab?.click();
+      await authSignup(signupEmail, signupPassword, signupFullName);
+      toast.success("Account created successfully!");
+      navigate("/app");
     } catch (error: any) {
+      console.error('Signup error:', error);
       toast.error(error.message || "Failed to create account");
     } finally {
       setLoading(false);

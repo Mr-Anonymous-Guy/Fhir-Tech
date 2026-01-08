@@ -51,17 +51,13 @@ const resolveBaseUrl = () => {
     if (isLocal || isTunnel) {
       // If we are NOT on the backend port, try to hit the backend port explicitly
       if (window.location.port !== "3001") {
-        // For tunnels, they often map ports to subdomains, so we prefer relative paths
-        // letting the Vite proxy (vite.config.ts) handle the routing
-        if (isTunnel) return "/api/auth";
-
-        return "http://localhost:3001/api/auth";
+        if (isTunnel) return "/api";
+        return "http://localhost:3001/api";
       }
     }
   }
 
-  // 3. Fallback to relative path (works for Vercel and correctly configured proxies)
-  return "/api/auth";
+  return "/api";
 };
 
 console.log('🛡️ Mongo Auth Service Loaded v2');
@@ -226,7 +222,7 @@ const mongoAuthService = {
   async verifyToken(token: string): Promise<boolean> {
     try {
       const baseUrl = resolveBaseUrl();
-      const response = await fetch(`${baseUrl}/verify-token`, {
+      const response = await fetch(`${baseUrl}/auth/verify-token`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -258,7 +254,7 @@ const mongoAuthService = {
       const baseUrl = resolveBaseUrl();
       const token = mongoAuthService.getToken();
 
-      const data = await safeJsonFetch(`${baseUrl}/profile/${userId}`, {
+      const data = await safeJsonFetch(`${baseUrl}/auth/profile/${userId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -285,7 +281,7 @@ const mongoAuthService = {
       const baseUrl = resolveBaseUrl();
       const token = mongoAuthService.getToken();
 
-      return await safeJsonFetch(`${baseUrl}/change-password`, {
+      return await safeJsonFetch(`${baseUrl}/auth/change-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

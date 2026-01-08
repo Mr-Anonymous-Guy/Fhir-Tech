@@ -79,8 +79,8 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Authentication endpoints
-app.post('/api/auth/register', async (req, res) => {
+// Authentication handler functions
+async function handleRegister(req, res) {
   try {
     const { email, password, username, fullName } = req.body;
 
@@ -94,9 +94,9 @@ app.post('/api/auth/register', async (req, res) => {
     console.error('Registration error:', error);
     res.status(400).json({ error: error.message });
   }
-});
+}
 
-app.post('/api/auth/login', async (req, res) => {
+async function handleLogin(req, res) {
   try {
     const { email, password } = req.body;
 
@@ -110,8 +110,16 @@ app.post('/api/auth/login', async (req, res) => {
     console.error('Login error:', error);
     res.status(401).json({ error: error.message });
   }
-});
+}
 
+// Authentication endpoints
+app.post('/api/auth/register', handleRegister);
+app.post('/api/register', handleRegister);
+
+app.post('/api/auth/login', handleLogin);
+app.post('/api/login', handleLogin);
+
+// Profile endpoints
 app.post('/api/auth/verify-token', async (req, res) => {
   try {
     const token = req.headers.authorization?.replace('Bearer ', '');

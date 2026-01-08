@@ -151,6 +151,179 @@ app.post('/api/auth/change-password', async (req, res) => {
   }
 });
 
+// ABHA ID Authentication endpoints
+app.post('/api/auth/abha/send-otp', async (req, res) => {
+  try {
+    const { abhaId, phoneNumber } = req.body;
+
+    if (!abhaId || !phoneNumber) {
+      return res.status(400).json({ error: 'ABHA ID and phone number are required' });
+    }
+
+    // Validate ABHA ID format (XX-XXXX-XXXX-XXXX)
+    const abhaIdRegex = /^\d{2}-\d{4}-\d{4}-\d{4}$/;
+    if (!abhaIdRegex.test(abhaId)) {
+      return res.status(400).json({ error: 'Invalid ABHA ID format' });
+    }
+
+    // Validate phone number format
+    const phoneRegex = /^(\+91[\s]?)?[6-9]\d{9}$/;
+    if (!phoneRegex.test(phoneNumber.replace(/\s/g, ''))) {
+      return res.status(400).json({ error: 'Invalid phone number format' });
+    }
+
+    // Mock OTP sending (in production, integrate with ABHA API)
+    console.log(`📱 Sending OTP to ${phoneNumber} for ABHA ID: ${abhaId}`);
+
+    // Store OTP in memory (in production, use Redis or database)
+    global.otpStore = global.otpStore || {};
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    global.otpStore[abhaId] = {
+      otp,
+      phoneNumber,
+      expiresAt: Date.now() + 5 * 60 * 1000 // 5 minutes
+    };
+
+    console.log(`✅ OTP generated for ${abhaId}: ${otp} (Demo mode - check console)`);
+
+    res.json({
+      success: true,
+      message: `OTP sent to ${phoneNumber}. Demo OTP: ${otp} (check console in production)`,
+    });
+  } catch (error) {
+    console.error('Send ABHA OTP error:', error);
+    res.status(500).json({ error: 'Failed to send OTP' });
+  }
+});
+
+app.post('/api/auth/abha/verify-otp', async (req, res) => {
+  try {
+    const { abhaId, phoneNumber, otp } = req.body;
+
+    if (!abhaId || !phoneNumber || !otp) {
+      return res.status(400).json({ error: 'ABHA ID, phone number, and OTP are required' });
+    }
+
+    // Verify OTP
+    global.otpStore = global.otpStore || {};
+    const storedOtpData = global.otpStore[abhaId];
+
+    if (!storedOtpData) {
+      return res.status(400).json({ error: 'No OTP found. Please request a new OTP.' });
+    }
+
+    if (storedOtpData.expiresAt < Date.now()) {
+      delete global.otpStore[abhaId];
+      return res.status(400).json({ error: 'OTP expired. Please request a new OTP.' });
+    }
+
+    if (storedOtpData.otp !== otp) {
+      return res.status(400).json({ error: 'Invalid OTP. Please try again.' });
+    }
+
+    if (storedOtpData.phoneNumber !== phoneNumber) {
+      return res.status(400).json({ error: 'Phone number mismatch.' });
+    }
+
+    // OTP verified successfully
+    delete global.otpStore[abhaId];
+
+    // Create or get user account linked to ABHA ID
+    // In production, fetch actual ABHA profile from ABHA API
+    const abhaProfile = {
+      abhaId,
+      abhaAddress: `${abhaId.replace(/-/g, '')}@abdm`,
+      name: 'ABHA User', // In production, fetch from ABHA API
+      gender: 'Not specified',
+      dateOfBirth: '1990-01-01',
+      phoneNumber,
+      email: `${abhaId.replace(/-/g, '')}@abha.in`
+    };
+
+    // Create user account
+    const user = {
+      id: `abha_${abhaId.replace(/-/g, '')}`,
+      email: abhaProfile.email,
+      username: abhaProfile.abhaAddress,
+      fullName: abhaProfile.name,
+      abhaId: abhaId,
+      phoneNumber: phoneNumber,
+      authMethod: 'abha',
+      createdAt: new Date().toISOString()
+    };
+
+    // Store ABHA profile in database
+    try {
+      await database.createAbhaProfile({
+        userId: user.id,
+        abhaId: abhaProfile.abhaId,
+        abhaAddress: abhaProfile.abhaAddress,
+        name: abhaProfile.name,
+        gender: abhaProfile.gender,
+        dateOfBirth: abhaProfile.dateOfBirth,
+        phoneNumber: abhaProfile.phoneNumber,
+        email: abhaProfile.email
+      });
+    } catch (dbError) {
+      console.warn('Could not store ABHA profile:', dbError.message);
+    }
+
+    // Generate token (mock - in production, use proper JWT)
+    const token = Buffer.from(JSON.stringify({ userId: user.id, abhaId })).toString('base64');
+
+    console.log(`✅ ABHA user authenticated: ${abhaId}`);
+
+    res.json({
+      success: true,
+      message: 'Account created successfully with ABHA ID',
+      user,
+      token
+    });
+  } catch (error) {
+    console.error('Verify ABHA OTP error:', error);
+    res.status(500).json({ error: 'Failed to verify OTP' });
+  }
+});
+
+app.get('/api/auth/abha/profile/:abhaId', async (req, res) => {
+  try {
+    const { abhaId } = req.params;
+
+    // Validate ABHA ID format
+    const abhaIdRegex = /^\d{2}-\d{4}-\d{4}-\d{4}$/;
+    if (!abhaIdRegex.test(abhaId)) {
+      return res.status(400).json({ error: 'Invalid ABHA ID format' });
+    }
+
+    // Try to get profile from database
+    try {
+      const profile = await database.getAbhaProfileByUserId(`abha_${abhaId.replace(/-/g, '')}`);
+      if (profile) {
+        return res.json({ success: true, profile });
+      }
+    } catch (dbError) {
+      console.warn('Could not fetch ABHA profile from database:', dbError.message);
+    }
+
+    // Mock ABHA profile (in production, fetch from ABHA API)
+    const profile = {
+      abhaId,
+      abhaAddress: `${abhaId.replace(/-/g, '')}@abdm`,
+      name: 'ABHA User',
+      gender: 'Not specified',
+      dateOfBirth: '1990-01-01',
+      phoneNumber: '+91 XXXXXXXXXX',
+      email: `${abhaId.replace(/-/g, '')}@abha.in`
+    };
+
+    res.json({ success: true, profile });
+  } catch (error) {
+    console.error('Get ABHA profile error:', error);
+    res.status(500).json({ error: 'Failed to fetch ABHA profile' });
+  }
+});
+
+
 // Mappings endpoints
 app.get('/api/mappings', async (req, res) => {
   try {
@@ -484,32 +657,32 @@ async function initializeSampleData() {
   console.log('\n==========================================');
   console.log('📊 DATABASE INITIALIZATION');
   console.log('==========================================\n');
-  
+
   try {
     console.log('🔍 Clearing old data...');
     await database.clearMappings();
     await database.clearAuditLogs();
     console.log('✅ Old data cleared');
-    
+
     console.log('\n📥 Inserting 15 sample mappings...');
     await database.insertMappings(MAPPINGS);
     console.log(`✅ Successfully inserted ${MAPPINGS.length} mappings`);
-    
+
     console.log('\n📥 Inserting sample audit logs...');
     for (const entry of AUDIT_LOGS) {
       await database.insertAuditEntry(entry);
     }
     console.log(`✅ Successfully inserted ${AUDIT_LOGS.length} audit entries`);
-    
+
     // Verify the data was inserted
     console.log('\n✔️  Verifying data...');
     const stats = await database.getMappingStats();
     console.log(`✔️  Database now contains ${stats.totalMappings} mappings`);
     console.log(`✔️  Average confidence score: ${(stats.avgConfidenceScore * 100).toFixed(1)}%`);
-    
+
     const categories = await database.getCategories();
     console.log(`✔️  Categories: ${categories.join(', ')}`);
-    
+
     console.log('\n✅ DATABASE INITIALIZATION COMPLETE');
     console.log('==========================================\n');
   } catch (error) {

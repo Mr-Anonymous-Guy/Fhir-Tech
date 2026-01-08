@@ -1,0 +1,47 @@
+[
+    {
+        "namasteCode": "AY-001",
+        "namasteLabel": "Amavata",
+        "icd11Tm2Code": "TM2-XXXX",
+        "icd11Tm2Label": "Amavata (Rheumatoid Arthritis)",
+        "icd11BioCode": "FA20.0",
+        "icd11BioLabel": "Rheumatoid arthritis",
+        "system": "Ayurveda"
+    },
+    {
+        "namasteCode": "AY-002",
+        "namasteLabel": "Jvara",
+        "icd11Tm2Code": "TM2-YYYY",
+        "icd11Tm2Label": "Jvara (Fever)",
+        "icd11BioCode": "MG26",
+        "icd11BioLabel": "Fever of other and unknown origin",
+        "system": "Ayurveda"
+    },
+    {
+        "namasteCode": "AY-003",
+        "namasteLabel": "Kasa",
+        "icd11Tm2Code": "TM2-ZZZZ",
+        "icd11Tm2Label": "Kasa (Cough)",
+        "icd11BioCode": "MD10",
+        "icd11BioLabel": "Cough",
+        "system": "Ayurveda"
+    },
+    {
+        "namasteCode": "AY-004",
+        "namasteLabel": "Atisara",
+        "icd11Tm2Code": "TM2-AAAA",
+        "icd11Tm2Label": "Atisara (Diarrhoea)",
+        "icd11BioCode": "ME05.1",
+        "icd11BioLabel": "Diarrhoea",
+        "system": "Ayurveda"
+    },
+    {
+        "namasteCode": "AY-005",
+        "namasteLabel": "Pandu",
+        "icd11Tm2Code": "TM2-BBBB",
+        "icd11Tm2Label": "Pandu (Anaemia)",
+        "icd11BioCode": "3A00",
+        "icd11BioLabel": "Iron deficiency anaemia",
+        "system": "Ayurveda"
+    }
+]

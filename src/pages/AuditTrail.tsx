@@ -19,7 +19,7 @@ const AuditTrail = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
-  
+
   const pageSize = 20;
 
   useEffect(() => {
@@ -51,9 +51,9 @@ const AuditTrail = () => {
         success: statusFilter === 'success' ? true : statusFilter === 'error' ? false : undefined,
         ...getTimeRangeFilter()
       };
-      
+
       const response = await enhancedFhirService.getAuditLog(page, pageSize, filters);
-      
+
       setAuditEntries(response.entries);
       setTotal(response.total);
     } catch (error) {
@@ -69,10 +69,10 @@ const AuditTrail = () => {
 
   const downloadAuditLog = () => {
     const csvHeader = 'timestamp,userId,userName,action,query,resultCount,success,duration,ipAddress\n';
-    const csvData = auditEntries.map(entry => 
+    const csvData = auditEntries.map(entry =>
       `${entry.timestamp},${entry.userId},${entry.userName},${entry.action},${entry.query || ''},${entry.resultCount || ''},${entry.success},${entry.duration},${entry.ipAddress || ''}`
     ).join('\n');
-    
+
     const blob = new Blob([csvHeader + csvData], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -80,7 +80,7 @@ const AuditTrail = () => {
     a.download = `audit_log_${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    
+
     toast({
       title: 'Download Started',
       description: 'Audit log is being downloaded as CSV.',
@@ -143,57 +143,57 @@ const AuditTrail = () => {
         <CardContent>
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Action Type</label>
-              <Select value={actionFilter} onValueChange={setActionFilter}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="backdrop-blur-md bg-card/95 border border-border/50 shadow-2xl">
-                  <SelectItem value="all">All Actions</SelectItem>
-                  <SelectItem value="search">Search Operations</SelectItem>
-                  <SelectItem value="translate">Translation Requests</SelectItem>
-                  <SelectItem value="encounter_upload">Encounter Uploads</SelectItem>
-                  <SelectItem value="bulk_upload">Bulk Uploads</SelectItem>
-                  <SelectItem value="fhir_generation">FHIR Generation</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Action Type</label>
+                <Select value={actionFilter} onValueChange={setActionFilter}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="backdrop-blur-md bg-card/95 border border-border/50 shadow-2xl">
+                    <SelectItem value="all">All Actions</SelectItem>
+                    <SelectItem value="search">Search Operations</SelectItem>
+                    <SelectItem value="translate">Translation Requests</SelectItem>
+                    <SelectItem value="encounter_upload">Encounter Uploads</SelectItem>
+                    <SelectItem value="bulk_upload">Bulk Uploads</SelectItem>
+                    <SelectItem value="fhir_generation">FHIR Generation</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Time Range</label>
+                <Select value={timeRangeFilter} onValueChange={setTimeRangeFilter}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="backdrop-blur-md bg-card/95 border border-border/50 shadow-2xl">
+                    <SelectItem value="all">All Time</SelectItem>
+                    <SelectItem value="today">Today</SelectItem>
+                    <SelectItem value="week">This Week</SelectItem>
+                    <SelectItem value="month">This Month</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Status</label>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="backdrop-blur-md bg-card/95 border border-border/50 shadow-2xl">
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="success">Success Only</SelectItem>
+                    <SelectItem value="error">Errors Only</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Time Range</label>
-              <Select value={timeRangeFilter} onValueChange={setTimeRangeFilter}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="backdrop-blur-md bg-card/95 border border-border/50 shadow-2xl">
-                  <SelectItem value="all">All Time</SelectItem>
-                  <SelectItem value="today">Today</SelectItem>
-                  <SelectItem value="week">This Week</SelectItem>
-                  <SelectItem value="month">This Month</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Status</label>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="backdrop-blur-md bg-card/95 border border-border/50 shadow-2xl">
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="success">Success Only</SelectItem>
-                  <SelectItem value="error">Errors Only</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            </div>
-            
+
             {(actionFilter !== 'all' || timeRangeFilter !== 'all' || statusFilter !== 'all') && (
               <div className="flex justify-end">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={() => {
                     setActionFilter('all');
                     setTimeRangeFilter('all');
@@ -287,7 +287,7 @@ const AuditTrail = () => {
                   </TableBody>
                 </Table>
               </div>
-              
+
               {/* Pagination */}
               {totalPages > 1 && (
                 <div className="flex items-center justify-between">
@@ -317,7 +317,7 @@ const AuditTrail = () => {
                   </div>
                 </div>
               )}
-              
+
               {/* Summary Stats */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-4 border-t">
                 <div className="text-center p-4 bg-blue-50 rounded-lg">

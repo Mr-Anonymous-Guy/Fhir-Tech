@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { DemoProvider } from "@/contexts/DemoContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+
 import Auth from "./pages/Auth";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -29,28 +30,28 @@ const App = () => (
           <AuthProvider>
             <Toaster />
             <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Welcome />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-              <Route path="/debug" element={<SignupTest />} />
-              <Route path="/app" element={<Layout />}>
-                <Route index element={<Dashboard />} />
-                <Route path="search" element={<Search />} />
-                <Route path="mappings" element={<Mappings />} />
-                <Route path="bulk-upload" element={<BulkUpload />} />
-                <Route path="audit" element={<AuditTrail />} />
-              </Route>
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-            </AuthProvider>
-          </DemoProvider>
-        </ThemeProvider>
-      </TooltipProvider>
-    </QueryClientProvider>
-  );
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Welcome />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
+                <Route path="/debug" element={<SignupTest />} />
+                <Route path="/app" element={<Layout />}>
+                  <Route index element={<Dashboard />} />
+                  <Route path="search" element={<Search />} />
+                  <Route path="mappings" element={<Mappings />} />
+                  <Route path="bulk-upload" element={<BulkUpload />} />
+                  <Route path="audit" element={<AuditTrail />} />
+                </Route>
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </AuthProvider>
+        </DemoProvider>
+      </ThemeProvider>
+    </TooltipProvider>
+  </QueryClientProvider>
+);
 
 export default App;

@@ -19,11 +19,11 @@ class DatabaseService {
       // Try to start local MongoDB instance first (with data folder)
       let uri = null;
       let useLocalStorage = false;
-      
+
       try {
-        console.log('🚀 Attempting to start local MongoDB instance with data folder...');
+        console.log('� Attempting to start local MongoDB instance with data folder...');
         const result = await startLocalMongoDB();
-        
+
         if (result.success && result.uri) {
           uri = result.uri;
           console.log('✅ Using local MongoDB instance with mongodb-data folder');
@@ -36,13 +36,13 @@ class DatabaseService {
         console.log('💾 Falling back to file-based local storage');
         useLocalStorage = true;
       }
-      
+
       // If MongoDB failed, use environment URI as last resort
       if (!uri && !useLocalStorage) {
         uri = process.env.MONGODB_URI || 'mongodb://localhost:27017';
         console.log('🔌 Using configured MongoDB URI');
       }
-      
+
       // If we should use local storage, mark it and continue without MongoDB
       if (useLocalStorage) {
         this.isConnected = false;
@@ -50,7 +50,7 @@ class DatabaseService {
         console.log('✅ File-based local storage ready (local-data/users.json)');
         return null; // Signal that we're using local storage
       }
-      
+
       const dbName = process.env.MONGODB_DB_NAME || 'namaste-sync';
 
       this.client = new MongoClient(uri, {
@@ -62,10 +62,10 @@ class DatabaseService {
       this.isConnected = true;
 
       console.log(`✅ Connected to MongoDB: ${dbName}`);
-      
+
       // Create indexes
       await this.createIndexes();
-      
+
       return this.db;
     } catch (error) {
       console.error('❌ Failed to connect to MongoDB:', error.message);
@@ -163,6 +163,29 @@ class DatabaseService {
         console.warn('⚠️ Warning: Could not create users indexes:', err.message);
       }
 
+      // Create indexes for ABHA profiles collection
+      try {
+        const abhaProfilesCollection = this.db.collection('abhaProfiles');
+        await abhaProfilesCollection.createIndexes([
+          { key: { userId: 1 }, unique: true },
+          { key: { abhaAddress: 1 }, unique: true },
+          { key: { healthIdNumber: 1 } }
+        ]);
+      } catch (err) {
+        console.warn('⚠️ Warning: Could not create ABHA profiles indexes:', err.message);
+      }
+
+      // Create indexes for ICD-11 links collection
+      try {
+        const icd11LinksCollection = this.db.collection('icd11Links');
+        await icd11LinksCollection.createIndexes([
+          { key: { namasteCode: 1 }, unique: true },
+          { key: { icd11Uri: 1 } }
+        ]);
+      } catch (err) {
+        console.warn('⚠️ Warning: Could not create ICD-11 links indexes:', err.message);
+      }
+
       console.log('✅ Database index creation attempted');
     } catch (error) {
       console.warn('⚠️ Warning: Database index creation failed:', error.message);
@@ -186,10 +209,10 @@ class DatabaseService {
 
   async searchMappings(query = '', filters = {}, page = 1, limit = 20) {
     const collection = this.db.collection('mappings');
-    
+
     // Build MongoDB query
     const mongoQuery = {};
-    
+
     // Text search
     if (query) {
       mongoQuery.$or = [
@@ -198,21 +221,21 @@ class DatabaseService {
         { icd11_tm2_description: { $regex: query, $options: 'i' } }
       ];
     }
-    
+
     // Filters
     if (filters.category) mongoQuery.category = filters.category;
     if (filters.chapter) mongoQuery.chapter_name = filters.chapter;
     if (filters.minConfidence) mongoQuery.confidence_score = { $gte: filters.minConfidence };
     if (filters.maxConfidence) {
-      mongoQuery.confidence_score = { 
-        ...mongoQuery.confidence_score, 
-        $lte: filters.maxConfidence 
+      mongoQuery.confidence_score = {
+        ...mongoQuery.confidence_score,
+        $lte: filters.maxConfidence
       };
     }
 
     // Count total results
     const total = await collection.countDocuments(mongoQuery);
-    
+
     // Get paginated results
     const skip = (page - 1) * limit;
     const mappings = await collection
@@ -232,7 +255,7 @@ class DatabaseService {
 
   async getMappingStats() {
     const collection = this.db.collection('mappings');
-    
+
     try {
       const stats = await collection.aggregate([
         {
@@ -281,7 +304,7 @@ class DatabaseService {
 
   async getAuditLogs(filters = {}, page = 1, limit = 50) {
     const collection = this.db.collection('auditLogs');
-    
+
     // Build query
     const query = {};
     if (filters.action) query.action = filters.action;
@@ -294,7 +317,7 @@ class DatabaseService {
 
     const total = await collection.countDocuments(query);
     const skip = (page - 1) * limit;
-    
+
     const entries = await collection
       .find(query)
       .sort({ timestamp: -1 })
@@ -330,8 +353,8 @@ class DatabaseService {
 
   async getUserSessions(userId) {
     const collection = this.db.collection('userSessions');
-    return await collection.find({ 
-      userId, 
+    return await collection.find({
+      userId,
       active: true,
       expiresAt: { $gt: new Date() }
     }).sort({ lastActivity: -1 }).toArray();
@@ -372,7 +395,7 @@ class DatabaseService {
 
   async getNotifications(filters = {}, page = 1, limit = 20) {
     const collection = this.db.collection('notifications');
-    
+
     const query = {};
     if (filters.userId) query.userId = filters.userId;
     if (filters.read !== undefined) query.read = filters.read;
@@ -381,7 +404,7 @@ class DatabaseService {
 
     const total = await collection.countDocuments(query);
     const skip = (page - 1) * limit;
-    
+
     const notifications = await collection
       .find(query)
       .sort({ createdAt: -1, priority: -1 })
@@ -431,7 +454,7 @@ class DatabaseService {
       if (format === 'csv') {
         // Convert to CSV format for audit logs
         const csvHeader = 'timestamp,action,query,success,duration\n';
-        const csvData = auditLogs.map(log => 
+        const csvData = auditLogs.map(log =>
           `${log.timestamp},${log.action},"${log.query || ''}",${log.success},${log.duration}`
         ).join('\n');
         return csvHeader + csvData;
@@ -453,7 +476,7 @@ class DatabaseService {
       size: Buffer.byteLength(backupData, 'utf8'),
       status: 'completed'
     };
-    
+
     const collection = this.db.collection('backups');
     await collection.insertOne(backup);
     return backup;
@@ -504,7 +527,7 @@ class DatabaseService {
 
   async getSupportTickets(filters = {}, page = 1, limit = 10) {
     const collection = this.db.collection('supportTickets');
-    
+
     const query = {};
     if (filters.userId) query.userId = filters.userId;
     if (filters.status) query.status = filters.status;
@@ -512,7 +535,7 @@ class DatabaseService {
 
     const total = await collection.countDocuments(query);
     const skip = (page - 1) * limit;
-    
+
     const tickets = await collection
       .find(query)
       .sort({ createdAt: -1 })
@@ -556,6 +579,56 @@ class DatabaseService {
       timestamp: new Date()
     };
     return await collection.insertOne(metric);
+  }
+
+  // ============================================
+  // Integration: ABHA & ICD-11 Operations
+  // ============================================
+
+  // ABHA Profiles
+  async createAbhaProfile(profileData) {
+    const collection = this.db.collection('abhaProfiles');
+    const profile = {
+      _id: new ObjectId(),
+      ...profileData,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    // Upsert based on userId to prevent duplicates
+    return await collection.updateOne(
+      { userId: profileData.userId },
+      { $set: profile },
+      { upsert: true }
+    );
+  }
+
+  async getAbhaProfileByUserId(userId) {
+    const collection = this.db.collection('abhaProfiles');
+    return await collection.findOne({ userId });
+  }
+
+  // ICD-11 Links
+  async createIcdLink(namasteCode, icd11Data) {
+    const collection = this.db.collection('icd11Links');
+    const link = {
+      namasteCode,
+      icd11Uri: icd11Data.uri,
+      icd11Code: icd11Data.code,
+      icd11Title: icd11Data.title,
+      linkedAt: new Date(),
+      metadata: icd11Data.metadata || {}
+    };
+
+    return await collection.updateOne(
+      { namasteCode },
+      { $set: link },
+      { upsert: true }
+    );
+  }
+
+  async getIcdLink(namasteCode) {
+    const collection = this.db.collection('icd11Links');
+    return await collection.findOne({ namasteCode });
   }
 }
 

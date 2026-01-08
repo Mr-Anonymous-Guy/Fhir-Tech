@@ -29,38 +29,58 @@ interface RegisterResponse {
 }
 
 const resolveBaseUrl = () => {
-  // Check for environment variable, but ignore placeholder values
-  const envBase =
-    (import.meta as any)?.env?.VITE_API_BASE_URL ||
-    (typeof process !== "undefined" ? (process as any)?.env?.VITE_API_BASE_URL : "");
-
-  const normalizedEnvBase =
-    typeof envBase === "string" && envBase.length > 0
-      ? envBase.replace(/\/$/, "")
-      : "";
-
-  // Ignore placeholder values like "api.yourdomain.com" or "@api_base_url"
-  const isPlaceholder = normalizedEnvBase && (
-    normalizedEnvBase.includes("yourdomain.com") ||
-    normalizedEnvBase.includes("@api") ||
-    normalizedEnvBase.startsWith("@")
-  );
-
-  if (normalizedEnvBase && !isPlaceholder) {
-    return `${normalizedEnvBase}/api/auth`;
+  // 1. Check for manual environment variable override
+  const envBase = (import.meta as any)?.env?.VITE_API_BASE_URL;
+  if (envBase && !envBase.includes("yourdomain.com") && !envBase.startsWith("@")) {
+    return `${envBase.replace(/\/$/, "")}/api/auth`;
   }
 
-  // In browser, check if we're on localhost
+  // 2. In local development (localhost), try to hit the backend directly on port 3001
+  // This helps when running frontend/backend separately without a proxy
   if (typeof window !== "undefined") {
-    const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-    if (isLocalhost) {
+    const isLocal =
+      window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1" ||
+      window.location.hostname.startsWith("192.168.") ||
+      window.location.hostname === "[::1]";
+
+    // If we're on localhost and NOT on the backend port already
+    if (isLocal && window.location.port !== "3001") {
       return "http://localhost:3001/api/auth";
     }
   }
 
-  // Default to relative path for Vercel deployment
+  // 3. Fallback: Use relative path (works with Vite proxy and Vercel/production)
   return "/api/auth";
 };
+
+/**
+ * Robust JSON fetch wrapper that handles non-JSON responses gracefully
+ */
+async function safeJsonFetch(url: string, options: RequestInit) {
+  const response = await fetch(url, options);
+  const contentType = response.headers.get("content-type");
+
+  // If not JSON, it's likely a 404/500 HTML error page
+  if (!contentType || !contentType.includes("application/json")) {
+    const text = await response.text();
+    const isHtml = text.trim().startsWith('<') || text.includes('The page could not be found');
+
+    if (isHtml) {
+      throw new Error(`API returned an HTML error instead of JSON. This usually means the backend server is not running or the route is incorrect. (Status: ${response.status})`);
+    }
+
+    throw new Error(`Unexpected response format: ${text.slice(0, 100)}...`);
+  }
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.error || result.message || `API Error (${response.status})`);
+  }
+
+  return result;
+}
 
 // Create service object without class instantiation
 const mongoAuthService = {
@@ -75,7 +95,7 @@ const mongoAuthService = {
       const baseUrl = resolveBaseUrl();
       const [firstName, ...lastNameParts] = fullName.split(' ');
       const lastName = lastNameParts.join(' ') || '';
-      
+
       const response = await fetch(`${baseUrl}/register`, {
         method: 'POST',
         headers: {
@@ -101,14 +121,14 @@ const mongoAuthService = {
       }
 
       const result = await response.json();
-      
+
       // Handle both response formats: { success, data: { user } } or { success, user }
       const data = result.data ? {
         success: result.success,
         user: result.data.user,
         message: result.data.message || 'Registration successful'
       } : result;
-      
+
       return data;
     } catch (error) {
       console.error('Registration error:', error);
@@ -122,7 +142,7 @@ const mongoAuthService = {
   async login(email: string, password: string): Promise<LoginResponse> {
     try {
       const baseUrl = resolveBaseUrl();
-      const response = await fetch(`${baseUrl}/login`, {
+      const result = await safeJsonFetch(`${baseUrl}/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -130,14 +150,8 @@ const mongoAuthService = {
         body: JSON.stringify({ email, password }),
       });
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Login failed');
-      }
-
-      const result = await response.json();
       console.log('Login API response:', result);
-      
+
       // Handle both response formats: { success, data: { user, token } } or { success, user, token }
       const data = result.data ? {
         success: result.success,
@@ -157,10 +171,6 @@ const mongoAuthService = {
       return data;
     } catch (error) {
       console.error('Login error:', error);
-      console.error('Login error details:', {
-        message: error instanceof Error ? error.message : String(error),
-        baseUrl: resolveBaseUrl()
-      });
       throw error;
     }
   },

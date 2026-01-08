@@ -5,7 +5,29 @@
 
 import { toast } from 'sonner';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+// Resolve API base URL dynamically
+const resolveApiBaseUrl = () => {
+    const envBase = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL;
+    if (envBase && !envBase.includes("yourdomain.com") && !envBase.startsWith("@")) {
+        return envBase.replace(/\/$/, "");
+    }
+
+    if (typeof window !== "undefined") {
+        const isLocal =
+            window.location.hostname === "localhost" ||
+            window.location.hostname === "127.0.0.1" ||
+            window.location.hostname.startsWith("192.168.") ||
+            window.location.hostname === "[::1]";
+
+        if (isLocal && window.location.port !== "3001") {
+            return "http://localhost:3001";
+        }
+    }
+
+    return ""; // Relative path
+};
+
+const API_BASE_URL = resolveApiBaseUrl();
 
 export interface AbhaSignupData {
     abhaId: string;
@@ -24,23 +46,45 @@ export interface AbhaProfile {
 }
 
 /**
+ * Robust JSON fetch wrapper that handles non-JSON responses gracefully
+ */
+async function safeJsonFetch(url: string, options: RequestInit) {
+    const response = await fetch(url, options);
+    const contentType = response.headers.get("content-type");
+
+    // If not JSON, it's likely an HTML error page (404/500)
+    if (!contentType || !contentType.includes("application/json")) {
+        const text = await response.text();
+        const isHtml = text.trim().startsWith('<') || text.includes('The page could not be found');
+
+        if (isHtml) {
+            throw new Error(`API returned an HTML error instead of JSON. This usually means the backend server is not running or the route is incorrect. (Status: ${response.status})`);
+        }
+
+        throw new Error(`Unexpected response format: ${text.slice(0, 50)}...`);
+    }
+
+    const result = await response.json();
+
+    if (!response.ok) {
+        throw new Error(result.error || result.message || `API Error (${response.status})`);
+    }
+
+    return result;
+}
+
+/**
  * Send OTP to the phone number associated with ABHA ID
  */
 export const sendAbhaOTP = async (abhaId: string, phoneNumber: string): Promise<{ success: boolean; message: string }> => {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/auth/abha/send-otp`, {
+        const data = await safeJsonFetch(`${API_BASE_URL}/api/auth/abha/send-otp`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ abhaId, phoneNumber }),
         });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(data.message || 'Failed to send OTP');
-        }
 
         return {
             success: true,
@@ -57,19 +101,13 @@ export const sendAbhaOTP = async (abhaId: string, phoneNumber: string): Promise<
  */
 export const verifyAbhaOTP = async (abhaId: string, phoneNumber: string, otp: string): Promise<{ user: any; token: string }> => {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/auth/abha/verify-otp`, {
+        const data = await safeJsonFetch(`${API_BASE_URL}/api/auth/abha/verify-otp`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ abhaId, phoneNumber, otp }),
         });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(data.message || 'Invalid OTP');
-        }
 
         return {
             user: data.user,
@@ -86,18 +124,12 @@ export const verifyAbhaOTP = async (abhaId: string, phoneNumber: string, otp: st
  */
 export const getAbhaProfile = async (abhaId: string): Promise<AbhaProfile> => {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/auth/abha/profile/${abhaId}`, {
+        const data = await safeJsonFetch(`${API_BASE_URL}/api/auth/abha/profile/${abhaId}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
             },
         });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(data.message || 'Failed to fetch ABHA profile');
-        }
 
         return data.profile;
     } catch (error) {

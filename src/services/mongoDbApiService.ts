@@ -27,42 +27,33 @@ interface AuditFilters {
 
 // Resolve API base URL dynamically
 const resolveApiBaseUrl = () => {
-  // Check for environment variable, but ignore placeholder values
-  const envBase =
-    (import.meta as any)?.env?.VITE_API_BASE_URL ||
-    (typeof process !== "undefined" ? (process as any)?.env?.VITE_API_BASE_URL : "");
-
-  const normalizedEnvBase =
-    typeof envBase === "string" && envBase.length > 0
-      ? envBase.replace(/\/$/, "")
-      : "";
-
-  // Ignore placeholder values like "api.yourdomain.com" or "@api_base_url"
-  const isPlaceholder = normalizedEnvBase && (
-    normalizedEnvBase.includes("yourdomain.com") ||
-    normalizedEnvBase.includes("@api") ||
-    normalizedEnvBase.startsWith("@")
-  );
-
-  if (normalizedEnvBase && !isPlaceholder) {
-    return `${normalizedEnvBase}/api`;
+  // 1. Check for manual environment variable override
+  const envBase = (import.meta as any)?.env?.VITE_API_BASE_URL;
+  if (envBase && !envBase.includes("yourdomain.com") && !envBase.startsWith("@")) {
+    return `${envBase.replace(/\/$/, "")}/api`;
   }
 
-  // In browser, check if we're on localhost
+  // 2. In local development (localhost), try to hit the backend directly on port 3001
   if (typeof window !== "undefined") {
-    const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-    if (isLocalhost) {
+    const isLocal =
+      window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1" ||
+      window.location.hostname.startsWith("192.168.") ||
+      window.location.hostname === "[::1]";
+
+    // If we're on localhost and NOT on the backend port already
+    if (isLocal && window.location.port !== "3001") {
       return "http://localhost:3001/api";
     }
   }
 
-  // Default to relative path for Vercel deployment
+  // 3. Fallback: Use relative path (works with Vite proxy and Vercel/production)
   return "/api";
 };
 
 class MongoDbApiService {
   private isAvailable = false;
-  
+
   private getBaseUrl(): string {
     return resolveApiBaseUrl();
   }
@@ -79,19 +70,27 @@ class MongoDbApiService {
 
     try {
       const response = await fetch(url, { ...defaultOptions, ...options });
+      const contentType = response.headers.get("content-type");
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        let errorData;
-        try {
-          errorData = JSON.parse(errorText);
-        } catch {
-          errorData = { error: errorText || response.statusText };
+      // If not JSON, it's likely an HTML error page (404/500)
+      if (!contentType || !contentType.includes("application/json")) {
+        const text = await response.text();
+        const isHtml = text.trim().startsWith('<') || text.includes('The page could not be found');
+
+        if (isHtml) {
+          throw new Error(`API returned an HTML error instead of JSON. (Status: ${response.status})`);
         }
-        throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+
+        throw new Error(`Unexpected response format: ${text.slice(0, 50)}...`);
       }
 
-      return response.json();
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || result.message || `API Error (${response.status})`);
+      }
+
+      return result;
     } catch (error) {
       console.error(`API request failed for ${url}:`, error);
       throw error;

@@ -57,8 +57,21 @@ app.use((req, res, next) => {
   next();
 });
 
+// Database auto-connect middleware (essential for serverless)
+app.use(async (req, res, next) => {
+  if (!database.isConnected && !database.useLocalStorage) {
+    try {
+      console.log('🔄 Serverless request: Initializing database connection...');
+      await database.connect();
+    } catch (err) {
+      console.error('❌ Database auto-connect failed:', err.message);
+    }
+  }
+  next();
+});
+
 // Health check endpoint
-app.get('/health', (req, res) => {
+app.get('/api/health', (req, res) => {
   res.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
@@ -617,6 +630,27 @@ app.get('/api/profile/system/stats', async (req, res) => {
     console.error('Get system stats error:', error);
     res.status(500).json({ error: 'Failed to get system statistics' });
   }
+});
+
+// Handle 404 - Not Found
+app.use((req, res) => {
+  console.warn(`⚠️ 404 Not Found: ${req.method} ${req.originalUrl}`);
+  res.status(404).json({
+    success: false,
+    error: 'API endpoint not found',
+    path: req.originalUrl,
+    method: req.method
+  });
+});
+
+// Global Error Handler
+app.use((err, req, res, next) => {
+  console.error('❌ Unhandled API Error:', err);
+  res.status(err.status || 500).json({
+    success: false,
+    error: err.message || 'Internal Server Error',
+    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+  });
 });
 
 // Initialize database and start server

@@ -3,7 +3,7 @@
  * This script helps set up MongoDB with initial data and proper indexes
  */
 
-import { dbService } from '@/services/database';
+import { mongoDbApiService as dbService } from '@/services/mongoDbApiService';
 import { NAMASTEMapping } from '@/types/fhir';
 
 /**
@@ -12,20 +12,20 @@ import { NAMASTEMapping } from '@/types/fhir';
 export async function initializeDatabase() {
   try {
     console.log('Initializing database...');
-    
+
     // Connect to database
     await dbService.connect();
-    
+
     // Check if database is already initialized
     const stats = await dbService.getMappingStats();
     if (stats.totalMappings > 0) {
       console.log(`Database already initialized with ${stats.totalMappings} mappings`);
       return;
     }
-    
+
     // Load initial data
     await loadInitialMappings();
-    
+
     console.log('Database initialized successfully');
   } catch (error) {
     console.error('Failed to initialize database:', error);
@@ -42,6 +42,19 @@ async function loadInitialMappings() {
     const response = await fetch('/data/ayush_icd11_mappings_200.csv');
     if (response.ok) {
       const csvText = await response.text();
+
+      // Robust check for HTML error pages instead of CSV
+      const isHtml = csvText.trim().startsWith('<') ||
+        csvText.toLowerCase().includes('<!doctype html>') ||
+        csvText.includes('The page could not be found');
+
+      if (isHtml) {
+        console.warn('⚠️ Received HTML instead of CSV mapping data. Falling back to sample data.');
+        const sampleMappings = generateSampleMappings();
+        await dbService.insertMappings(sampleMappings);
+        return;
+      }
+
       const mappings = parseCSVMappings(csvText);
       await dbService.insertMappings(mappings);
       console.log(`Loaded ${mappings.length} mappings from CSV`);
@@ -69,23 +82,23 @@ function parseCSVMappings(csvText: string): NAMASTEMapping[] {
     .filter(line => line.trim())
     .map((line, index) => {
       try {
-        const [namaste_code, namaste_term, icd11_tm2_code, icd11_biomedicine_code, description] = 
+        const [namaste_code, namaste_term, icd11_tm2_code, icd11_biomedicine_code, description] =
           line.split(',').map(field => field.trim().replace(/"/g, ''));
-        
+
         // Validate required fields
         if (!namaste_code || !namaste_term) {
           throw new Error(`Missing required fields on line ${index + 2}`);
         }
-        
+
         // Extract category from code prefix
         let category: 'Ayurveda' | 'Siddha' | 'Unani' = 'Ayurveda';
         if (namaste_code.startsWith('AYU-')) category = 'Ayurveda';
         else if (namaste_code.startsWith('SID-')) category = 'Siddha';
         else if (namaste_code.startsWith('UNA-')) category = 'Unani';
-        
+
         // Generate chapter name from traditional term
         const chapter_name = generateChapterName(namaste_term);
-        
+
         return {
           namaste_code,
           namaste_term,
@@ -109,7 +122,7 @@ function parseCSVMappings(csvText: string): NAMASTEMapping[] {
  */
 function generateChapterName(term: string): string {
   const termLower = term.toLowerCase();
-  
+
   if (termLower.includes('respiratory') || termLower.includes('cough') || termLower.includes('asthma') || termLower.includes('cold')) {
     return 'Respiratory System Disorders';
   } else if (termLower.includes('digestive') || termLower.includes('gastro') || termLower.includes('diarrhea') || termLower.includes('acidity')) {
@@ -131,7 +144,7 @@ function generateChapterName(term: string): string {
   } else if (termLower.includes('child') || termLower.includes('pediatric') || termLower.includes('infant')) {
     return 'Pediatric Disorders';
   }
-  
+
   return 'General Medicine';
 }
 
@@ -191,7 +204,7 @@ function generateSampleMappings(): NAMASTEMapping[] {
       icd11_biomedicine_code: 'BE789',
       confidence_score: 0.87
     },
-    
+
     // Siddha mappings
     {
       namaste_code: 'SID-001',
@@ -223,7 +236,7 @@ function generateSampleMappings(): NAMASTEMapping[] {
       icd11_biomedicine_code: 'BF890',
       confidence_score: 0.93
     },
-    
+
     // Unani mappings
     {
       namaste_code: 'UNA-001',
@@ -326,16 +339,16 @@ export async function clearDatabase() {
  */
 export async function checkDatabaseStatus() {
   try {
-    if (!dbService.isConnected()) {
+    if (!dbService.isConnectedDb()) {
       await dbService.connect();
     }
-    
+
     const stats = await dbService.getMappingStats();
     const [categories, chapters] = await Promise.all([
       dbService.getCategories(),
       dbService.getChapters()
     ]);
-    
+
     return {
       connected: true,
       totalMappings: stats.totalMappings,

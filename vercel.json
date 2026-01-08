@@ -26,8 +26,12 @@
   ],
   "rewrites": [
     {
+      "source": "/api/fhir/:path*",
+      "destination": "/api/fhir/terminology.js"
+    },
+    {
       "source": "/api/:path*",
-      "destination": "/api/:path*"
+      "destination": "/api/index.js"
     },
     {
       "source": "/(.*\\.(js|css|png|jpg|jpeg|gif|svg|ico|txt|json|csv|map))",

@@ -4,7 +4,7 @@
  * Falls back to local storage if MongoDB requires authentication
  */
 
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { ObjectId } = require('mongodb');
 const database = require('../database');
@@ -45,11 +45,11 @@ class AuthService {
 
     try {
       const usersCollection = database.db.collection('users');
-      
+
       // Check if user already exists
       let existingUser;
       try {
-        existingUser = await usersCollection.findOne({ 
+        existingUser = await usersCollection.findOne({
           $or: [
             { email: userData.email },
             { username: userData.username }
@@ -64,14 +64,14 @@ class AuthService {
         }
         console.warn('Warning: Could not check existing user:', findError.message);
       }
-      
+
       if (existingUser) {
         throw new Error('User with this email or username already exists');
       }
-      
+
       // Hash password
       const hashedPassword = await bcrypt.hash(userData.password, this.SALT_ROUNDS);
-      
+
       // Create user object
       const user = {
         _id: new ObjectId(),
@@ -85,7 +85,7 @@ class AuthService {
         updatedAt: new Date(),
         lastLogin: null
       };
-      
+
       // Insert user
       try {
         const result = await usersCollection.insertOne(user);
@@ -100,10 +100,10 @@ class AuthService {
         }
         throw insertError;
       }
-      
+
       // Remove password from response
       const { password, ...userWithoutPassword } = user;
-      
+
       return {
         success: true,
         user: userWithoutPassword,
@@ -126,7 +126,7 @@ class AuthService {
 
     try {
       const usersCollection = database.db.collection('users');
-      
+
       // Find user by email
       let user;
       try {
@@ -141,18 +141,18 @@ class AuthService {
         console.error('Find user error:', findError.message);
         throw new Error('Unable to authenticate. Please try again.');
       }
-      
+
       if (!user) {
         throw new Error('Invalid email or password');
       }
-      
+
       // Verify password
       const isPasswordValid = await bcrypt.compare(password, user.password);
-      
+
       if (!isPasswordValid) {
         throw new Error('Invalid email or password');
       }
-      
+
       // Update last login
       try {
         await usersCollection.updateOne(
@@ -162,21 +162,21 @@ class AuthService {
       } catch (updateError) {
         console.warn('Warning: Could not update last login:', updateError.message);
       }
-      
+
       // Generate JWT token
       const token = jwt.sign(
-        { 
-          userId: user._id.toString(), 
+        {
+          userId: user._id.toString(),
           email: user.email,
           role: user.role
         },
         this.JWT_SECRET,
         { expiresIn: this.JWT_EXPIRES_IN }
       );
-      
+
       // Remove password from response
       const { password: _, ...userWithoutPassword } = user;
-      
+
       return {
         success: true,
         user: userWithoutPassword,
@@ -207,14 +207,14 @@ class AuthService {
   async getUserById(userId) {
     try {
       const usersCollection = database.db.collection('users');
-      const user = await usersCollection.findOne({ 
-        _id: new ObjectId(userId) 
+      const user = await usersCollection.findOne({
+        _id: new ObjectId(userId)
       });
-      
+
       if (!user) {
         throw new Error('User not found');
       }
-      
+
       // Remove password from response
       const { password, ...userWithoutPassword } = user;
       return userWithoutPassword;
@@ -230,20 +230,20 @@ class AuthService {
   async updateUserProfile(userId, updateData) {
     try {
       const usersCollection = database.db.collection('users');
-      
+
       // Remove sensitive fields from update data
       const { password, email, role, ...safeUpdateData } = updateData;
       safeUpdateData.updatedAt = new Date();
-      
+
       const result = await usersCollection.updateOne(
         { _id: new ObjectId(userId) },
         { $set: safeUpdateData }
       );
-      
+
       if (result.matchedCount === 0) {
         throw new Error('User not found');
       }
-      
+
       const updatedUser = await this.getUserById(userId);
       return {
         success: true,
@@ -262,32 +262,32 @@ class AuthService {
   async changePassword(userId, currentPassword, newPassword) {
     try {
       const usersCollection = database.db.collection('users');
-      
+
       // Find user
-      const user = await usersCollection.findOne({ 
-        _id: new ObjectId(userId) 
+      const user = await usersCollection.findOne({
+        _id: new ObjectId(userId)
       });
-      
+
       if (!user) {
         throw new Error('User not found');
       }
-      
+
       // Verify current password
       const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
-      
+
       if (!isCurrentPasswordValid) {
         throw new Error('Current password is incorrect');
       }
-      
+
       // Hash new password
       const hashedNewPassword = await bcrypt.hash(newPassword, this.SALT_ROUNDS);
-      
+
       // Update password
       await usersCollection.updateOne(
         { _id: user._id },
         { $set: { password: hashedNewPassword, updatedAt: new Date() } }
       );
-      
+
       return {
         success: true,
         message: 'Password changed successfully'

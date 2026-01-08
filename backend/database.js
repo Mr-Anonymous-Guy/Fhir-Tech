@@ -4,7 +4,6 @@
  */
 
 const { MongoClient, ObjectId } = require('mongodb');
-const { startLocalMongoDB } = require('./mongodb-local');
 require('dotenv').config();
 
 class DatabaseService {
@@ -20,27 +19,37 @@ class DatabaseService {
       let uri = null;
       let useLocalStorage = false;
 
-      try {
-        console.log('� Attempting to start local MongoDB instance with data folder...');
-        const result = await startLocalMongoDB();
+      // In Vercel or production environments, ALWAYS use the configured URI
+      const isVercel = process.env.VERCEL || process.env.VERCEL_ENV;
+      const isProd = process.env.NODE_ENV === 'production' || process.env.VITE_APP_ENV === 'production';
 
-        if (result.success && result.uri) {
-          uri = result.uri;
-          console.log('✅ Using local MongoDB instance with mongodb-data folder');
-        } else {
-          console.log('⚠️ MongoDB folder creation failed, will use file-based storage');
+      if (isVercel || isProd) {
+        uri = process.env.MONGODB_URI;
+        if (!uri) {
+          console.error('❌ MONGODB_URI environment variable is missing in production!');
+          // Fallback to avoid complete crash during build
+          this.isConnected = false;
+          this.useLocalStorage = true;
+          return null;
+        }
+        console.log('🔌 Using Production MongoDB URI');
+      } else {
+        // Local development logic
+        try {
+          console.log(' Attempting to start local MongoDB instance...');
+          const { startLocalMongoDB } = require('./mongodb-local');
+          const result = await startLocalMongoDB();
+
+          if (result.success && result.uri) {
+            uri = result.uri;
+            console.log('✅ Using local MongoDB instance');
+          } else {
+            useLocalStorage = true;
+          }
+        } catch (localError) {
+          console.log('⚠️ Could not start local MongoDB:', localError.message);
           useLocalStorage = true;
         }
-      } catch (localError) {
-        console.log('⚠️ Could not start local MongoDB:', localError.message);
-        console.log('💾 Falling back to file-based local storage');
-        useLocalStorage = true;
-      }
-
-      // If MongoDB failed, use environment URI as last resort
-      if (!uri && !useLocalStorage) {
-        uri = process.env.MONGODB_URI || 'mongodb://localhost:27017';
-        console.log('🔌 Using configured MongoDB URI');
       }
 
       // If we should use local storage, mark it and continue without MongoDB

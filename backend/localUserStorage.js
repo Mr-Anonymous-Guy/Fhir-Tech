@@ -4,7 +4,7 @@
  * Data persists in local-data/users.json
  */
 
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const fs = require('fs');
 const path = require('path');
@@ -17,7 +17,7 @@ class LocalUserStorage {
     this.JWT_EXPIRES_IN = '24h';
     this.dataDir = path.join(__dirname, '..', 'local-data');
     this.dataFile = path.join(this.dataDir, 'users.json');
-    
+
     // Ensure data directory exists and load existing data
     this.ensureDataDirectory();
     this.loadData();
@@ -77,14 +77,14 @@ class LocalUserStorage {
       const existingUser = Array.from(this.users.values()).find(
         u => u.email === userData.email || u.username === userData.username
       );
-      
+
       if (existingUser) {
         throw new Error('User with this email or username already exists');
       }
-      
+
       // Hash password
       const hashedPassword = await bcrypt.hash(userData.password, this.SALT_ROUNDS);
-      
+
       // Create user object
       const user = {
         _id: Math.random().toString(36).substr(2, 9),
@@ -98,14 +98,14 @@ class LocalUserStorage {
         updatedAt: new Date(),
         lastLogin: null
       };
-      
+
       // Store user
       this.users.set(user._id, user);
       this.saveData();
-      
+
       // Remove password from response
       const { password, ...userWithoutPassword } = user;
-      
+
       return {
         success: true,
         user: userWithoutPassword,
@@ -124,37 +124,37 @@ class LocalUserStorage {
     try {
       // Find user by email
       const user = Array.from(this.users.values()).find(u => u.email === email);
-      
+
       if (!user) {
         throw new Error('Invalid email or password');
       }
-      
+
       // Verify password
       const isPasswordValid = await bcrypt.compare(password, user.password);
-      
+
       if (!isPasswordValid) {
         throw new Error('Invalid email or password');
       }
-      
+
       // Update last login
       user.lastLogin = new Date();
       user.updatedAt = new Date();
       this.saveData();
-      
+
       // Generate JWT token
       const token = jwt.sign(
-        { 
-          userId: user._id, 
+        {
+          userId: user._id,
           email: user.email,
           role: user.role
         },
         this.JWT_SECRET,
         { expiresIn: this.JWT_EXPIRES_IN }
       );
-      
+
       // Remove password from response
       const { password: _, ...userWithoutPassword } = user;
-      
+
       return {
         success: true,
         user: userWithoutPassword,
@@ -185,11 +185,11 @@ class LocalUserStorage {
   async getUserById(userId) {
     try {
       const user = this.users.get(userId);
-      
+
       if (!user) {
         throw new Error('User not found');
       }
-      
+
       // Remove password from response
       const { password, ...userWithoutPassword } = user;
       return userWithoutPassword;
@@ -205,21 +205,21 @@ class LocalUserStorage {
   async updateUserProfile(userId, updateData) {
     try {
       const user = this.users.get(userId);
-      
+
       if (!user) {
         throw new Error('User not found');
       }
-      
+
       // Remove sensitive fields from update data
       const { password, email, role, ...safeUpdateData } = updateData;
-      
+
       // Update user
       Object.assign(user, safeUpdateData, { updatedAt: new Date() });
       this.saveData();
-      
+
       // Remove password from response
       const { password: _, ...userWithoutPassword } = user;
-      
+
       return {
         success: true,
         user: userWithoutPassword,
@@ -237,26 +237,26 @@ class LocalUserStorage {
   async changePassword(userId, currentPassword, newPassword) {
     try {
       const user = this.users.get(userId);
-      
+
       if (!user) {
         throw new Error('User not found');
       }
-      
+
       // Verify current password
       const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
-      
+
       if (!isCurrentPasswordValid) {
         throw new Error('Current password is incorrect');
       }
-      
+
       // Hash new password
       const hashedNewPassword = await bcrypt.hash(newPassword, this.SALT_ROUNDS);
-      
+
       // Update password
       user.password = hashedNewPassword;
       user.updatedAt = new Date();
       this.saveData();
-      
+
       return {
         success: true,
         message: 'Password changed successfully'

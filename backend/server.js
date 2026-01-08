@@ -698,5 +698,10 @@ process.on('SIGINT', async () => {
   process.exit(0);
 });
 
-// Start the server
-startServer();
+// Export the app for serverless environments (like Vercel)
+module.exports = app;
+
+// Only start the server if this file is run directly
+if (require.main === module) {
+  startServer();
+}

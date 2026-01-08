@@ -7,20 +7,28 @@ import { toast } from 'sonner';
 
 // Resolve API base URL dynamically
 const resolveApiBaseUrl = () => {
-    const envBase = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL;
+    // 1. Check for manual override
+    const envBase = (import.meta as any)?.env?.VITE_API_URL || (import.meta as any)?.env?.VITE_API_BASE_URL;
     if (envBase && !envBase.includes("yourdomain.com") && !envBase.startsWith("@")) {
         return envBase.replace(/\/$/, "");
     }
 
+    // 2. Handle environment-specific logic
     if (typeof window !== "undefined") {
+        const hostname = window.location.hostname;
         const isLocal =
-            window.location.hostname === "localhost" ||
-            window.location.hostname === "127.0.0.1" ||
-            window.location.hostname.startsWith("192.168.") ||
-            window.location.hostname === "[::1]";
+            hostname === "localhost" ||
+            hostname === "127.0.0.1" ||
+            hostname.startsWith("192.168.") ||
+            hostname === "[::1]";
 
-        if (isLocal && window.location.port !== "3001") {
-            return "http://localhost:3001";
+        const isTunnel = hostname.includes("-8080") || hostname.includes("-3000");
+
+        if (isLocal || isTunnel) {
+            if (window.location.port !== "3001") {
+                if (isTunnel) return ""; // Use relative path for tunnels
+                return "http://localhost:3001";
+            }
         }
     }
 
@@ -45,32 +53,51 @@ export interface AbhaProfile {
     email?: string;
 }
 
+console.log('🛡️ ABHA Auth Service Loaded');
+
 /**
  * Robust JSON fetch wrapper that handles non-JSON responses gracefully
  */
 async function safeJsonFetch(url: string, options: RequestInit) {
-    const response = await fetch(url, options);
-    const contentType = response.headers.get("content-type");
-
-    // If not JSON, it's likely an HTML error page (404/500)
-    if (!contentType || !contentType.includes("application/json")) {
+    try {
+        const response = await fetch(url, options);
         const text = await response.text();
-        const isHtml = text.trim().startsWith('<') || text.includes('The page could not be found');
 
-        if (isHtml) {
-            throw new Error(`API returned an HTML error instead of JSON. This usually means the backend server is not running or the route is incorrect. (Status: ${response.status})`);
+        // Check if it's empty
+        if (!text || text.trim() === '') {
+            if (!response.ok) throw new Error(`API returned empty response with status ${response.status}`);
+            return {};
         }
 
-        throw new Error(`Unexpected response format: ${text.slice(0, 50)}...`);
+        // Try to parse as JSON
+        try {
+            const result = JSON.parse(text);
+
+            if (!response.ok) {
+                throw new Error(result.error || result.message || `API Error (${response.status})`);
+            }
+
+            return result;
+        } catch (parseError) {
+            // Not JSON, analyze the text to provide a better error
+            const isHtml = text.trim().startsWith('<') ||
+                text.toLowerCase().includes('<!doctype html>') ||
+                text.includes('The page could not be found') ||
+                text.includes('Vercel') ||
+                text.includes('404');
+
+            if (isHtml) {
+                throw new Error(`The backend API returned an HTML page instead of JSON. Ensure your backend is running. (Status: ${response.status})`);
+            }
+
+            throw new Error(`API returned invalid JSON: ${text.slice(0, 60)}...`);
+        }
+    } catch (error) {
+        if (error instanceof Error && (error.message.includes('Failed to fetch') || error.message.includes('Load failed'))) {
+            throw new Error(`Unable to connect to the backend server at "${url}". Please ensure your backend is running.`);
+        }
+        throw error;
     }
-
-    const result = await response.json();
-
-    if (!response.ok) {
-        throw new Error(result.error || result.message || `API Error (${response.status})`);
-    }
-
-    return result;
 }
 
 /**

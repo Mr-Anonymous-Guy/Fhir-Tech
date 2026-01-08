@@ -29,57 +29,86 @@ interface RegisterResponse {
 }
 
 const resolveBaseUrl = () => {
-  // 1. Check for manual environment variable override
-  const envBase = (import.meta as any)?.env?.VITE_API_BASE_URL;
+  // 1. Check for manual override
+  const envBase = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL;
   if (envBase && !envBase.includes("yourdomain.com") && !envBase.startsWith("@")) {
-    return `${envBase.replace(/\/$/, "")}/api/auth`;
+    return envBase.replace(/\/$/, "") + "/api/auth";
   }
 
-  // 2. In local development (localhost), try to hit the backend directly on port 3001
-  // This helps when running frontend/backend separately without a proxy
+  // 2. Handle environment-specific logic
   if (typeof window !== "undefined") {
+    const hostname = window.location.hostname;
     const isLocal =
-      window.location.hostname === "localhost" ||
-      window.location.hostname === "127.0.0.1" ||
-      window.location.hostname.startsWith("192.168.") ||
-      window.location.hostname === "[::1]";
+      hostname === "localhost" ||
+      hostname === "127.0.0.1" ||
+      hostname.startsWith("192.168.") ||
+      hostname === "[::1]";
 
-    // If we're on localhost and NOT on the backend port already
-    if (isLocal && window.location.port !== "3001") {
-      return "http://localhost:3001/api/auth";
+    // If we're on a cloud IDE or tunnel (e.g. GitHub Codespaces, Gitpod)
+    // they often use hostname patterns like xxxx-8080.something.com
+    const isTunnel = hostname.includes("-8080") || hostname.includes("-3000");
+
+    if (isLocal || isTunnel) {
+      // If we are NOT on the backend port, try to hit the backend port explicitly
+      if (window.location.port !== "3001") {
+        // For tunnels, they often map ports to subdomains, so we prefer relative paths
+        // letting the Vite proxy (vite.config.ts) handle the routing
+        if (isTunnel) return "/api/auth";
+
+        return "http://localhost:3001/api/auth";
+      }
     }
   }
 
-  // 3. Fallback: Use relative path (works with Vite proxy and Vercel/production)
+  // 3. Fallback to relative path (works for Vercel and correctly configured proxies)
   return "/api/auth";
 };
+
+console.log('🛡️ Mongo Auth Service Loaded v2');
 
 /**
  * Robust JSON fetch wrapper that handles non-JSON responses gracefully
  */
 async function safeJsonFetch(url: string, options: RequestInit) {
-  const response = await fetch(url, options);
-  const contentType = response.headers.get("content-type");
-
-  // If not JSON, it's likely a 404/500 HTML error page
-  if (!contentType || !contentType.includes("application/json")) {
+  try {
+    const response = await fetch(url, options);
     const text = await response.text();
-    const isHtml = text.trim().startsWith('<') || text.includes('The page could not be found');
 
-    if (isHtml) {
-      throw new Error(`API returned an HTML error instead of JSON. This usually means the backend server is not running or the route is incorrect. (Status: ${response.status})`);
+    // Check if it's empty
+    if (!text || text.trim() === '') {
+      if (!response.ok) throw new Error(`API returned empty response with status ${response.status}`);
+      return {};
     }
 
-    throw new Error(`Unexpected response format: ${text.slice(0, 100)}...`);
+    // Try to parse as JSON
+    try {
+      const result = JSON.parse(text);
+
+      if (!response.ok) {
+        throw new Error(result.error || result.message || `API Error (${response.status})`);
+      }
+
+      return result;
+    } catch (parseError) {
+      // Not JSON, analyze the text to provide a better error
+      const isHtml = text.trim().startsWith('<') ||
+        text.toLowerCase().includes('<!doctype html>') ||
+        text.includes('The page could not be found') ||
+        text.includes('Vercel') ||
+        text.includes('404');
+
+      if (isHtml) {
+        throw new Error(`The backend API returned an HTML page instead of JSON. This usually means the backend server is not running, or the URL "${url}" is incorrect. (Status: ${response.status})`);
+      }
+
+      throw new Error(`API returned invalid JSON: ${text.slice(0, 60)}...`);
+    }
+  } catch (error) {
+    if (error instanceof Error && (error.message.includes('Failed to fetch') || error.message.includes('Load failed'))) {
+      throw new Error(`Unable to connect to the backend server at "${url}". Please ensure your backend is running.`);
+    }
+    throw error;
   }
-
-  const result = await response.json();
-
-  if (!response.ok) {
-    throw new Error(result.error || result.message || `API Error (${response.status})`);
-  }
-
-  return result;
 }
 
 // Create service object without class instantiation
@@ -96,7 +125,7 @@ const mongoAuthService = {
       const [firstName, ...lastNameParts] = fullName.split(' ');
       const lastName = lastNameParts.join(' ') || '';
 
-      const response = await fetch(`${baseUrl}/register`, {
+      const result = await safeJsonFetch(`${baseUrl}/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -108,19 +137,6 @@ const mongoAuthService = {
           lastName: lastName,
         }),
       });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Registration failed');
-      }
-
-      const contentType = response.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        const text = await response.text();
-        throw new Error(`Unexpected response format: ${text.slice(0, 100)}`);
-      }
-
-      const result = await response.json();
 
       // Handle both response formats: { success, data: { user } } or { success, user }
       const data = result.data ? {
@@ -241,7 +257,8 @@ const mongoAuthService = {
     try {
       const baseUrl = resolveBaseUrl();
       const token = mongoAuthService.getToken();
-      const response = await fetch(`${baseUrl}/profile/${userId}`, {
+
+      const data = await safeJsonFetch(`${baseUrl}/profile/${userId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -249,13 +266,6 @@ const mongoAuthService = {
         },
         body: JSON.stringify(updateData),
       });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Profile update failed');
-      }
-
-      const data = await response.json();
 
       // Update stored user data
       localStorage.setItem(mongoAuthService.userKey, JSON.stringify(data.user));
@@ -274,7 +284,8 @@ const mongoAuthService = {
     try {
       const baseUrl = resolveBaseUrl();
       const token = mongoAuthService.getToken();
-      const response = await fetch(`${baseUrl}/change-password`, {
+
+      return await safeJsonFetch(`${baseUrl}/change-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -282,13 +293,6 @@ const mongoAuthService = {
         },
         body: JSON.stringify({ userId, currentPassword, newPassword }),
       });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Password change failed');
-      }
-
-      return await response.json();
     } catch (error) {
       console.error('Password change error:', error);
       throw error;

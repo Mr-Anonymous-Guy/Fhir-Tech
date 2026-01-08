@@ -25,37 +25,37 @@ interface AuditFilters {
   endDate?: string;
 }
 
-// Resolve API base URL dynamically
-const resolveApiBaseUrl = () => {
-  // 1. Check for manual environment variable override
-  const envBase = (import.meta as any)?.env?.VITE_API_BASE_URL;
-  if (envBase && !envBase.includes("yourdomain.com") && !envBase.startsWith("@")) {
-    return `${envBase.replace(/\/$/, "")}/api`;
-  }
-
-  // 2. In local development (localhost), try to hit the backend directly on port 3001
-  if (typeof window !== "undefined") {
-    const isLocal =
-      window.location.hostname === "localhost" ||
-      window.location.hostname === "127.0.0.1" ||
-      window.location.hostname.startsWith("192.168.") ||
-      window.location.hostname === "[::1]";
-
-    // If we're on localhost and NOT on the backend port already
-    if (isLocal && window.location.port !== "3001") {
-      return "http://localhost:3001/api";
-    }
-  }
-
-  // 3. Fallback: Use relative path (works with Vite proxy and Vercel/production)
-  return "/api";
-};
-
 class MongoDbApiService {
   private isAvailable = false;
 
   private getBaseUrl(): string {
-    return resolveApiBaseUrl();
+    // 1. Check for manual override
+    const envBase = (import.meta as any)?.env?.VITE_API_BASE_URL || (import.meta as any)?.env?.VITE_API_URL;
+    if (envBase && !envBase.includes("yourdomain.com") && !envBase.startsWith("@")) {
+      return envBase.replace(/\/$/, "") + "/api";
+    }
+
+    // 2. Handle environment-specific logic
+    if (typeof window !== "undefined") {
+      const hostname = window.location.hostname;
+      const isLocal =
+        hostname === "localhost" ||
+        hostname === "127.0.0.1" ||
+        hostname.startsWith("192.168.") ||
+        hostname === "[::1]";
+
+      const isTunnel = hostname.includes("-8080") || hostname.includes("-3000");
+
+      if (isLocal || isTunnel) {
+        if (window.location.port !== "3001") {
+          if (isTunnel) return "/api";
+          return "http://localhost:3001/api";
+        }
+      }
+    }
+
+    // 3. Fallback
+    return "/api";
   }
 
   // Helper method for API requests
@@ -70,29 +70,40 @@ class MongoDbApiService {
 
     try {
       const response = await fetch(url, { ...defaultOptions, ...options });
-      const contentType = response.headers.get("content-type");
+      const text = await response.text();
 
-      // If not JSON, it's likely an HTML error page (404/500)
-      if (!contentType || !contentType.includes("application/json")) {
-        const text = await response.text();
-        const isHtml = text.trim().startsWith('<') || text.includes('The page could not be found');
+      // Check for empty response
+      if (!text || text.trim() === '') {
+        if (!response.ok) throw new Error(`API returned empty response with status ${response.status}`);
+        return {};
+      }
 
-        if (isHtml) {
-          throw new Error(`API returned an HTML error instead of JSON. (Status: ${response.status})`);
+      // Try to parse as JSON
+      try {
+        const result = JSON.parse(text);
+
+        if (!response.ok) {
+          throw new Error(result.error || result.message || `API Error (${response.status})`);
         }
 
-        throw new Error(`Unexpected response format: ${text.slice(0, 50)}...`);
+        return result;
+      } catch (parseError) {
+        const isHtml = text.trim().startsWith('<') ||
+          text.toLowerCase().includes('<!doctype html>') ||
+          text.includes('The page could not be found') ||
+          text.includes('Vercel') ||
+          text.includes('404');
+
+        if (isHtml) {
+          throw new Error(`The backend API (at ${url}) returned an HTML page instead of JSON. Ensure your backend server is running and port 3001 is accessible. (Status: ${response.status})`);
+        }
+
+        throw new Error(`API returned invalid JSON: ${text.slice(0, 50)}...`);
       }
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || result.message || `API Error (${response.status})`);
-      }
-
-      return result;
     } catch (error) {
-      console.error(`API request failed for ${url}:`, error);
+      if (error instanceof Error && (error.message.includes('Failed to fetch') || error.message.includes('Load failed'))) {
+        throw new Error(`Unable to connect to the backend server at "${url}". Please ensure your backend is running.`);
+      }
       throw error;
     }
   }
